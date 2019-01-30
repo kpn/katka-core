@@ -1,0 +1,9 @@
+.dist
+.git
+.idea
+.pytest_cache
+.tox
+htmlcov
+venv
+setup.py
+**/__pycache__
