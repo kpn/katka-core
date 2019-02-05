@@ -72,7 +72,7 @@ docker/build/%:
 	docker build -t $(DOCKER_REPOSITORY)/$(IMAGE):$* .
 
 docker/tag/%:
-	docker tag $(DOCKER_REPOSITORY)/$(IMAGE) $(REPOSITORY)/$(IMAGE):$*
+	docker tag $(DOCKER_REPOSITORY)/$(IMAGE) $(DOCKER_REPOSITORY)/$(IMAGE):$*
 
 docker/push/%:
 	docker push $(DOCKER_REPOSITORY)/$(IMAGE):$*
@@ -80,10 +80,10 @@ docker/push/%:
 docker/%: docker/build
 	docker run --rm -v $(PWD):$(PWD) -w $(PWD) $(DOCKER_REPOSITORY)/$(IMAGE) make $*
 
-docker/publish/%: docker/build
+docker/publish: docker/build
 	docker run --rm -v $(PWD):$(PWD) -w $(PWD) \
-	-e tag=$* -e TWINE_PASSWORD=$(TWINE_PASSWORD) -e TWINE_USERNAME=$(TWINE_USERNAME) \
-	$(REPOSITORY)/$(IMAGE) make publish
+	-e tag=$(TAG) -e TWINE_PASSWORD=$(TWINE_PASSWORD) -e TWINE_USERNAME=$(TWINE_USERNAME) \
+	$(DOCKER_REPOSITORY)/$(IMAGE) make publish
 
 
 # ********** Tests **********
