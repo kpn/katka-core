@@ -1,0 +1,2 @@
+class MissingUsername(Exception):
+    pass
