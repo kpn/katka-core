@@ -29,6 +29,23 @@ INSTALLED_APPS = [
     'encrypted_model_fields'
 ]
 
-MIDDLEWARE = ()
+MIDDLEWARE = (
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+)
+
+TEMPLATES = (
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': (
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            )
+        }
+    },
+)
 
 REQUESTS_CA_BUNDLE = '/etc/ssl/certs/ca-certificates.crt'
