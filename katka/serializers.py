@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group
 
-from katka.models import Team
+from katka.models import Project, Team
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 
@@ -22,10 +22,48 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = ('public_identifier', 'name', 'group')
+        fields = ('public_identifier', 'slug', 'name', 'group')
 
     def validate_group(self, group):
         if not self.context['request'].user.groups.filter(name=group.name).exists():
             raise PermissionDenied('User is not a member of this group')
 
         return group
+
+
+class EmbeddedTeamSerializer(serializers.Serializer):
+    """
+    Instead of using a serializers.PrimaryKeyRelatedField to show only the public_identifier,
+    this serializer shows both pi and slug. Both slug and pi can be used in the URL to access
+    objects.
+    """
+    public_identifier = serializers.UUIDField(required=False)
+    slug = serializers.SlugField(required=False)
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    team = EmbeddedTeamSerializer(required=False, read_only=True)
+
+    class Meta:
+        model = Project
+        fields = ('public_identifier', 'slug', 'name', 'team')
+
+    def to_internal_value(self, data):
+        # Can't put this on the EmbeddedTeamSerializer because it will never be called (team is not required and
+        # read-only, so it's not allowed to pass the team when modifying something).
+        try:
+            data['team'] = Team.objects.get(public_identifier=self.context['view'].kwargs['team_public_identifier'])
+        except Team.DoesNotExist:
+            raise NotFound
+
+        return data
+
+    def validate(self, attrs):
+        # since 'team' is not required and read-only, it will not be present on a create/update
+        # therefore, validate_team() will not be called, but validate() will. Because to_internal_value() will
+        # add a 'team', we can validate it here.
+
+        if not self.context['request'].user.groups.filter(name=attrs['team'].group.name).exists():
+            raise PermissionDenied('User is not a member of this group')
+
+        return attrs

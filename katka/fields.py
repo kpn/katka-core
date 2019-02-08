@@ -79,3 +79,8 @@ class AutoUsernameField(models.CharField):
             setattr(model_instance, self.attname, self._username)
 
         return getattr(model_instance, self.attname)
+
+
+class KatkaSlugField(models.SlugField):
+    def __init__(self, *args, max_length=10, unique=True, **kwargs):
+        super().__init__(*args, max_length=max_length, unique=unique, **kwargs)
