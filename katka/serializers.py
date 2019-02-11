@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group
 
-from katka.models import Project, Team
+from katka.models import Credential, Project, Team
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 
@@ -41,16 +41,11 @@ class EmbeddedTeamSerializer(serializers.Serializer):
     slug = serializers.SlugField(required=False)
 
 
-class ProjectSerializer(serializers.ModelSerializer):
-    team = EmbeddedTeamSerializer(required=False, read_only=True)
-
-    class Meta:
-        model = Project
-        fields = ('public_identifier', 'slug', 'name', 'team')
-
+class TeamChildMixin:
     def to_internal_value(self, data):
         # Can't put this on the EmbeddedTeamSerializer because it will never be called (team is not required and
         # read-only, so it's not allowed to pass the team when modifying something).
+        data = super().to_internal_value(data)
         try:
             data['team'] = Team.objects.get(public_identifier=self.context['view'].kwargs['team_public_identifier'])
         except Team.DoesNotExist:
@@ -66,4 +61,20 @@ class ProjectSerializer(serializers.ModelSerializer):
         if not self.context['request'].user.groups.filter(name=attrs['team'].group.name).exists():
             raise PermissionDenied('User is not a member of this group')
 
-        return attrs
+        return super().validate(attrs)
+
+
+class ProjectSerializer(TeamChildMixin, serializers.ModelSerializer):
+    team = EmbeddedTeamSerializer(required=False, read_only=True)
+
+    class Meta:
+        model = Project
+        fields = ('public_identifier', 'slug', 'name', 'team')
+
+
+class CredentialSerializer(TeamChildMixin, serializers.ModelSerializer):
+    team = EmbeddedTeamSerializer(required=False, read_only=True)
+
+    class Meta:
+        model = Credential
+        fields = ('name', 'slug', 'team')

@@ -82,5 +82,5 @@ class AutoUsernameField(models.CharField):
 
 
 class KatkaSlugField(models.SlugField):
-    def __init__(self, *args, max_length=10, unique=True, **kwargs):
-        super().__init__(*args, max_length=max_length, unique=unique, **kwargs)
+    def __init__(self, *args, max_length=10, blank=False, null=False, **kwargs):
+        super().__init__(*args, max_length=max_length, blank=blank, null=null, **kwargs)
