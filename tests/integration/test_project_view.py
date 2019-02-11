@@ -47,7 +47,7 @@ class TestProjectViewSetUnauthenticated:
 
     def test_create(self, client, team):
         url = f'/team/{team.public_identifier}/project/'
-        data = {'name': 'Project D'}
+        data = {'name': 'Project D', 'slug': 'PRJD'}
         response = client.post(url, data, content_type='application/json')
         assert response.status_code == 403
 
@@ -76,6 +76,7 @@ class TestProjectViewSet:
         assert response.status_code == 200
         parsed = response.json()
         assert parsed['name'] == 'Project D'
+        assert parsed['slug'] == 'PRJD'
         assert parsed['team']['slug'] == 'ATM'
         assert UUID(parsed['team']['public_identifier']) == team.public_identifier
 
@@ -91,7 +92,7 @@ class TestProjectViewSet:
 
     def test_update(self, client, logged_in_user, team, project):
         url = f'/team/{team.public_identifier}/project/{project.public_identifier}/'
-        data = {'name': 'Project X'}
+        data = {'name': 'Project X', 'slug': 'PRJX'}
         response = client.put(url, data, content_type='application/json')
         assert response.status_code == 200
         p = models.Project.objects.get(pk=project.public_identifier)
@@ -99,7 +100,7 @@ class TestProjectViewSet:
 
     def test_update_nonexistent_team(self, client, logged_in_user, team, project):
         url = f'/team/00000000-0000-0000-0000-000000000000/project/{project.public_identifier}/'
-        data = {'name': 'Project X'}
+        data = {'name': 'Project X', 'slug': 'PRJX'}
         response = client.put(url, data, content_type='application/json')
         assert response.status_code == 404
 
@@ -113,7 +114,7 @@ class TestProjectViewSet:
 
     def test_create(self, client, logged_in_user, team, project):
         url = f'/team/{team.public_identifier}/project/'
-        response = client.post(url, {'name': 'Project X'}, content_type='application/json')
+        response = client.post(url, {'name': 'Project X', 'slug': 'PRJX'}, content_type='application/json')
         assert response.status_code == 201
         p = models.Project.objects.get(name='Project X')
         assert p.name == 'Project X'

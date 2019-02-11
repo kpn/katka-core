@@ -50,6 +50,15 @@ def deactivated_project(team, project):
 
 
 @pytest.fixture
+def credential(team):
+    credential = models.Credential(name='System user X', slug='SUX', team=team)
+    with username_on_model(models.Credential, 'initial'):
+        credential.save()
+
+    return credential
+
+
+@pytest.fixture
 def user(group):
     u = User.objects.create_user('test_user', None, None)
     u.groups.add(group)

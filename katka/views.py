@@ -1,5 +1,5 @@
-from katka.models import Project, Team
-from katka.serializers import ProjectSerializer, TeamSerializer
+from katka.models import Credential, Project, Team
+from katka.serializers import CredentialSerializer, ProjectSerializer, TeamSerializer
 from katka.viewsets import AuditViewSet
 
 
@@ -18,6 +18,15 @@ class TeamViewSet(AuditViewSet):
 class ProjectViewSet(AuditViewSet):
     model = Project
     serializer_class = ProjectSerializer
+
+    def get_queryset(self):
+        user_groups = self.request.user.groups.all()
+        return super().get_queryset().filter(team__group__in=user_groups)
+
+
+class CredentialViewSet(AuditViewSet):
+    model = Credential
+    serializer_class = CredentialSerializer
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
