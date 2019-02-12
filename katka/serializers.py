@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group
 
-from katka.models import Credential, Project, Team
+from katka.models import Credential, CredentialSecret, Project, Team
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 
@@ -78,3 +78,22 @@ class CredentialSerializer(TeamChildMixin, serializers.ModelSerializer):
     class Meta:
         model = Credential
         fields = ('name', 'slug', 'team')
+
+
+class CredentialSecretSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CredentialSecret
+        fields = ('key', 'value', 'credential')
+
+    def to_internal_value(self, data):
+        data['credential'] = self.context['view'].kwargs['credential_pk']
+        return super().to_internal_value(data)
+
+    def validate(self, attrs):
+        team_pui = self.context['view'].kwargs['team_public_identifier']
+        if not self.context['request'].user.groups.filter(team__public_identifier=team_pui).exists():
+            if Team.objects.filter(public_identifier=team_pui).exists():
+                raise PermissionDenied('User is not a member of this group')
+            raise NotFound
+
+        return attrs
