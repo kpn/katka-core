@@ -17,38 +17,38 @@ class TestTeamViewSetUnauthenticated:
     """
 
     def test_list(self, client, team):
-        response = client.get('/team/')
+        response = client.get('/teams/')
         assert response.status_code == 200
         parsed = response.json()
         assert len(parsed) == 0
 
     def test_get(self, client, team):
-        response = client.get(f'/team/{team.public_identifier}/')
+        response = client.get(f'/teams/{team.public_identifier}/')
         assert response.status_code == 404
 
     def test_delete(self, client, team):
-        response = client.delete(f'/team/{team.public_identifier}/')
+        response = client.delete(f'/teams/{team.public_identifier}/')
         assert response.status_code == 404
 
     def test_update(self, client, team):
         data = {'name': 'B-Team', 'group': 'group1'}
-        response = client.put(f'/team/{team.public_identifier}/', data, content_type='application/json')
+        response = client.put(f'/teams/{team.public_identifier}/', data, content_type='application/json')
         assert response.status_code == 404
 
     def test_partial_update(self, client, team):
-        response = client.patch(f'/team/{team.public_identifier}/', {'name': 'B-Team'},
+        response = client.patch(f'/teams/{team.public_identifier}/', {'name': 'B-Team'},
                                 content_type='application/json')
         assert response.status_code == 404
 
     def test_create(self, client, team, group):
-        response = client.post(f'/team/', {'name': 'B-Team', 'group': group.name}, content_type='application/json')
+        response = client.post(f'/teams/', {'name': 'B-Team', 'group': group.name}, content_type='application/json')
         assert response.status_code == 403
 
 
 @pytest.mark.django_db
 class TestTeamViewSet:
     def test_list(self, client, logged_in_user, team):
-        response = client.get('/team/')
+        response = client.get('/teams/')
         assert response.status_code == 200
         parsed = response.json()
         assert len(parsed) == 1
@@ -57,13 +57,13 @@ class TestTeamViewSet:
         UUID(parsed[0]['public_identifier'])  # should not raise
 
     def test_list_excludes_inactive(self, client, logged_in_user, deactivated_team):
-        response = client.get('/team/')
+        response = client.get('/teams/')
         assert response.status_code == 200
         parsed = response.json()
         assert len(parsed) == 0
 
     def test_get(self, client, logged_in_user, team):
-        response = client.get(f'/team/{team.public_identifier}/')
+        response = client.get(f'/teams/{team.public_identifier}/')
         assert response.status_code == 200
         parsed = response.json()
         assert parsed['name'] == 'A-Team'
@@ -71,25 +71,25 @@ class TestTeamViewSet:
         UUID(parsed['public_identifier'])  # should not raise
 
     def test_get_excludes_inactive(self, client, logged_in_user, deactivated_team):
-        response = client.get(f'/team/{deactivated_team.public_identifier}/')
+        response = client.get(f'/teams/{deactivated_team.public_identifier}/')
         assert response.status_code == 404
 
     def test_delete(self, client, logged_in_user, team):
-        response = client.delete(f'/team/{team.public_identifier}/')
+        response = client.delete(f'/teams/{team.public_identifier}/')
         assert response.status_code == 204
         t = models.Team.objects.get(pk=team.public_identifier)
         assert t.status == STATUS_INACTIVE
 
     def test_update(self, client, logged_in_user, team):
         data = {'name': 'B-Team', 'slug': 'BTM', 'group': 'group1'}
-        response = client.put(f'/team/{team.public_identifier}/', data, content_type='application/json')
+        response = client.put(f'/teams/{team.public_identifier}/', data, content_type='application/json')
         assert response.status_code == 200
         t = models.Team.objects.get(pk=team.public_identifier)
         assert t.name == 'B-Team'
 
     def test_partial_update(self, client, logged_in_user, team):
         data = {'name': 'B-Team'}
-        response = client.patch(f'/team/{team.public_identifier}/', data, content_type='application/json')
+        response = client.patch(f'/teams/{team.public_identifier}/', data, content_type='application/json')
         assert response.status_code == 200
         t = models.Team.objects.get(pk=team.public_identifier)
         assert t.name == 'B-Team'
@@ -98,19 +98,20 @@ class TestTeamViewSet:
         group2 = Group(name='group2')
         group2.save()
         client.force_login(user)
-        response = client.patch(f'/team/{team.public_identifier}/', {'group': 'group2'},
+        response = client.patch(f'/teams/{team.public_identifier}/', {'group': 'group2'},
                                 content_type='application/json')
         assert response.status_code == 403
 
     def test_change_group_not_exists(self, client, logged_in_user, team):
-        response = client.patch(f'/team/{team.public_identifier}/', {'group': 'group2'},
+        response = client.patch(f'/teams/{team.public_identifier}/', {'group': 'group2'},
                                 content_type='application/json')
         assert response.status_code == 404
 
     def test_create(self, client, logged_in_user, team, group):
+        before_count = models.Team.objects.count()
         data = {'name': 'B-Team', 'slug': 'BTM', 'group': group.name}
-        response = client.post(f'/team/', data, content_type='application/json')
+        response = client.post(f'/teams/', data, content_type='application/json')
         assert response.status_code == 201
         t = models.Team.objects.get(name='B-Team')
         assert t.name == 'B-Team'
-        assert models.Team.objects.count() == 2
+        assert models.Team.objects.count() == before_count + 1

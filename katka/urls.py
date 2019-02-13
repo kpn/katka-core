@@ -9,21 +9,15 @@ from . import views
 app_name = 'katka_core'
 
 router = routers.SimpleRouter()
-router.register('team', views.TeamViewSet, basename='team')
+router.register('teams', views.TeamViewSet, basename='teams')
+router.register('projects', views.ProjectViewSet, basename='projects')
+router.register('credentials', views.CredentialViewSet, basename='credentials')
 
-project_router = NestedSimpleRouter(router, 'team', lookup='team')
-project_router.register('project', views.ProjectViewSet, basename='project')
-
-credential_router = NestedSimpleRouter(router, 'team', lookup='team')
-credential_router.register('credential', views.CredentialViewSet, basename='credential')
-
-secrets_router = NestedSimpleRouter(credential_router, 'credential', lookup='credential')
+secrets_router = NestedSimpleRouter(router, 'credentials', lookup='credentials')
 secrets_router.register('secrets', views.CredentialSecretsViewSet, basename='secrets')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
-    path('', include(project_router.urls)),
-    path('', include(credential_router.urls)),
     path('', include(secrets_router.urls)),
 ]

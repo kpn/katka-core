@@ -14,12 +14,36 @@ def group():
 
 
 @pytest.fixture
-def team(group):
+def not_my_group():
+    group = Group(name='not_my_group')
+    group.save()
+    return group
+
+
+@pytest.fixture
+def not_my_team(not_my_group):
+    z_team = models.Team(name='Z-Team', slug='ZTM', group=not_my_group)
+
+    with username_on_model(models.Team, 'initial'):
+        z_team.save()
+
+    return z_team
+
+
+@pytest.fixture
+def my_team(group):
     a_team = models.Team(name='A-Team', slug='ATM', group=group)
+
     with username_on_model(models.Team, 'initial'):
         a_team.save()
 
     return a_team
+
+
+@pytest.fixture
+def team(my_team, not_my_team):
+    """Return my team, but also make sure that 'not_my_team' is active so we can test if it is excluded, etc."""
+    return my_team
 
 
 @pytest.fixture
