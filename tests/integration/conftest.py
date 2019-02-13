@@ -59,6 +59,24 @@ def credential(team):
 
 
 @pytest.fixture
+def secret(credential):
+    secret = models.CredentialSecret(key='access_token', value='full_access_value', credential=credential)
+    with username_on_model(models.CredentialSecret, 'initial'):
+        secret.save()
+
+    return secret
+
+
+@pytest.fixture
+def deactivated_secret(secret):
+    secret.status = 'inactive'
+    with username_on_model(models.CredentialSecret, 'initial'):
+        secret.save()
+
+    return secret
+
+
+@pytest.fixture
 def user(group):
     u = User.objects.create_user('test_user', None, None)
     u.groups.add(group)

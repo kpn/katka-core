@@ -3,6 +3,7 @@ import uuid
 from django.contrib.auth.models import Group
 from django.db import models
 
+from encrypted_model_fields.fields import EncryptedCharField
 from katka.auditedmodel import AuditedModel
 from katka.fields import KatkaSlugField
 
@@ -42,3 +43,15 @@ class Credential(AuditedModel):
 
     def __str__(self):  # pragma: no cover
         return f'{self.name}'
+
+
+class CredentialSecret(AuditedModel):
+    key = models.CharField(max_length=50)
+    value = EncryptedCharField(max_length=200)
+    credential = models.ForeignKey(Credential, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('credential', 'key')
+
+    def __str__(self):  # pragma: no cover
+        return f'{self.credential.name}/{self.key}'
