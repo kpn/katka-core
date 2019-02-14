@@ -11,6 +11,7 @@ app_name = 'katka_core'
 router = routers.SimpleRouter()
 router.register('teams', views.TeamViewSet, basename='teams')
 router.register('projects', views.ProjectViewSet, basename='projects')
+router.register('applications', views.ApplicationViewSet, basename='applications')
 router.register('credentials', views.CredentialViewSet, basename='credentials')
 router.register('scm-services', views.SCMServiceViewSet, basename='scm-services')
 

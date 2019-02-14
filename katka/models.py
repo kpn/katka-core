@@ -31,6 +31,19 @@ class Project(AuditedModel):
         return f'{self.name}'
 
 
+class Application(AuditedModel):
+    public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    slug = KatkaSlugField()
+    name = models.CharField(max_length=100)
+    project = models.ForeignKey(Project, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = ('project', 'slug')
+
+    def __str__(self):  # pragma: no cover
+        return f'{self.name}'
+
+
 class Credential(AuditedModel):
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     slug = KatkaSlugField()

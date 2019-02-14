@@ -74,6 +74,24 @@ def deactivated_project(team, project):
 
 
 @pytest.fixture
+def application(project):
+    application = models.Application(project=project, name='Application D', slug='APPD')
+    with username_on_model(models.Application, 'initial'):
+        application.save()
+
+    return application
+
+
+@pytest.fixture
+def deactivated_application(application):
+    application.status = 'inactive'
+    with username_on_model(models.Application, 'initial'):
+        application.save()
+
+    return application
+
+
+@pytest.fixture
 def credential(team):
     credential = models.Credential(name='System user X', slug='SUX', team=team)
     with username_on_model(models.Credential, 'initial'):

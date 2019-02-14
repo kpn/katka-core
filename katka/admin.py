@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from katka.fields import username_on_model
-from katka.models import Credential, CredentialSecret, Project, SCMService, Team
+from katka.models import Application, Credential, CredentialSecret, Project, SCMService, Team
 
 
 class WithUsernameAdminModel(admin.ModelAdmin):
@@ -18,6 +18,11 @@ class TeamAdmin(WithUsernameAdminModel):
 @admin.register(Project)
 class ProjectAdmin(WithUsernameAdminModel):
     fields = ('name', 'slug', 'team')
+
+
+@admin.register(Application)
+class ApplicationAdmin(WithUsernameAdminModel):
+    fields = ('name', 'slug', 'project')
 
 
 @admin.register(Credential)

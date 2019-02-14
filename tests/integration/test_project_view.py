@@ -14,7 +14,7 @@ class TestProjectViewSetUnauthenticated:
     not be found, except on create (you need to be part of a group and anonymous users do not have any)
     """
 
-    def test_list(self, client, team, project):
+    def test_list(self, client):
         response = client.get('/projects/')
         assert response.status_code == 200
         parsed = response.json()
