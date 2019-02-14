@@ -3,9 +3,9 @@ from django.contrib.auth.models import Group, User
 from django.test.client import RequestFactory
 
 import pytest
-from katka.admin import CredentialAdmin, CredentialSecretAdmin, ProjectAdmin, TeamAdmin
+from katka.admin import CredentialAdmin, CredentialSecretAdmin, ProjectAdmin, SCMServiceAdmin, TeamAdmin
 from katka.fields import username_on_model
-from katka.models import Credential, CredentialSecret, Project, Team
+from katka.models import Credential, CredentialSecret, Project, SCMService, Team
 
 
 @pytest.fixture
@@ -76,6 +76,17 @@ class TestCredentialSecretAdmin:
     def test_save_stores_username(self, mock_request, credential):
         c = CredentialSecretAdmin(CredentialSecret, AdminSite())
         obj = CredentialSecret(key='access_key', value='supersecret', credential=credential)
+        c.save_model(mock_request, obj, None, None)
+
+        assert obj.created_username == 'mock1'
+        assert obj.modified_username == 'mock1'
+
+
+@pytest.mark.django_db
+class TestSCMServiceAdmin:
+    def test_save_stores_username(self, mock_request):
+        c = SCMServiceAdmin(SCMService, AdminSite())
+        obj = SCMService(type='git', server_url='www.example.com')
         c.save_model(mock_request, obj, None, None)
 
         assert obj.created_username == 'mock1'

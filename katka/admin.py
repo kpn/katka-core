@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from katka.fields import username_on_model
-from katka.models import Credential, CredentialSecret, Project, Team
+from katka.models import Credential, CredentialSecret, Project, SCMService, Team
 
 
 class WithUsernameAdminModel(admin.ModelAdmin):
@@ -28,3 +28,8 @@ class CredentialAdmin(WithUsernameAdminModel):
 @admin.register(CredentialSecret)
 class CredentialSecretAdmin(WithUsernameAdminModel):
     fields = ('key', 'value', 'credential')
+
+
+@admin.register(SCMService)
+class SCMServiceAdmin(WithUsernameAdminModel):
+    fields = ('type', 'server_url')

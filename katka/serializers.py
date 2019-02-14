@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group
 
-from katka.models import Credential, CredentialSecret, Project, Team
+from katka.models import Credential, CredentialSecret, Project, SCMService, Team
 from katka.serializer_fields import CredentialRelatedField, GroupNameField, TeamRelatedField
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
@@ -47,3 +47,10 @@ class CredentialSecretSerializer(serializers.ModelSerializer):
         """Automatically add credential pk based on url kwargs"""
         data['credential'] = self.context['view'].kwargs['credentials_pk']
         return super().to_internal_value(data)
+
+
+class SCMServiceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SCMService
+        fields = ('public_identifier', 'type', 'server_url')

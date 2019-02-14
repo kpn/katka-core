@@ -1,14 +1,23 @@
 from katka.constants import STATUS_INACTIVE
 from katka.fields import username_on_model
-from rest_framework import status, viewsets
+from rest_framework import mixins, status
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 
-class AuditViewSet(viewsets.ModelViewSet):
+class ReadOnlyAuditViewMixin(mixins.RetrieveModelMixin,
+                             mixins.ListModelMixin,
+                             GenericViewSet):
     model = None
 
     def get_queryset(self):
         return self.model.objects.exclude(status=STATUS_INACTIVE)
+
+
+class AuditViewSet(mixins.CreateModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   ReadOnlyAuditViewMixin):
 
     def create(self, request, *args, **kwargs):
         with username_on_model(self.model, request.user.username):

@@ -55,3 +55,13 @@ class CredentialSecret(AuditedModel):
 
     def __str__(self):  # pragma: no cover
         return f'{self.credential.name}/{self.key}'
+
+
+class SCMService(AuditedModel):
+
+    public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    type = models.CharField(max_length=48)
+    server_url = models.URLField(null=False)
+
+    def __str__(self):  # pragma: no cover
+        return f'{self.type}/{self.server_url}'
