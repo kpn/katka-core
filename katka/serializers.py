@@ -1,7 +1,9 @@
 from django.contrib.auth.models import Group
 
 from katka.models import Application, Credential, CredentialSecret, Project, SCMService, Team
-from katka.serializer_fields import CredentialRelatedField, GroupNameField, ProjectRelatedField, TeamRelatedField
+from katka.serializer_fields import (
+    CredentialRelatedField, GroupNameField, ProjectRelatedField, SCMRepositoryRelatedField, TeamRelatedField,
+)
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
@@ -30,10 +32,11 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class ApplicationSerializer(serializers.ModelSerializer):
     project = ProjectRelatedField()
+    scm_repository = SCMRepositoryRelatedField()
 
     class Meta:
         model = Application
-        fields = ('public_identifier', 'slug', 'name', 'project')
+        fields = ('public_identifier', 'slug', 'name', 'project', 'scm_repository')
 
 
 class CredentialSerializer(serializers.ModelSerializer):

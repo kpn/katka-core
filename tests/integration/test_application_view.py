@@ -82,9 +82,11 @@ class TestApplicationViewSet:
         a = models.Application.objects.get(pk=application.public_identifier)
         assert a.status == STATUS_INACTIVE
 
-    def test_update(self, client, logged_in_user, project, application):
+    def test_update(self, client, logged_in_user, project, application, scm_repository):
         url = f'/applications/{application.public_identifier}/'
-        data = {'name': 'Application X', 'slug': 'APPX', 'project': project.public_identifier}
+        data = {'name': 'Application X', 'slug': 'APPX',
+                'project': project.public_identifier,
+                'scm_repository': scm_repository.public_identifier}
         response = client.put(url, data, content_type='application/json')
         assert response.status_code == 200
         a = models.Application.objects.get(pk=application.public_identifier)
@@ -110,10 +112,12 @@ class TestApplicationViewSet:
         a = models.Application.objects.get(pk=application.public_identifier)
         assert a.name == 'Application X'
 
-    def test_create(self, client, logged_in_user, project):
+    def test_create(self, client, logged_in_user, project, scm_repository):
         initial_count = models.Application.objects.count()
         url = f'/applications/'
-        data = {'name': 'Application X', 'slug': 'APPX', 'project': project.public_identifier}
+        data = {'name': 'Application X', 'slug': 'APPX',
+                'project': project.public_identifier,
+                'scm_repository': scm_repository.public_identifier}
         response = client.post(url, data=data, content_type='application/json')
         assert response.status_code == 201
         a = models.Application.objects.get(name='Application X')

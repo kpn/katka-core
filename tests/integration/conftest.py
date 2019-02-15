@@ -74,24 +74,6 @@ def deactivated_project(team, project):
 
 
 @pytest.fixture
-def application(project):
-    application = models.Application(project=project, name='Application D', slug='APPD')
-    with username_on_model(models.Application, 'initial'):
-        application.save()
-
-    return application
-
-
-@pytest.fixture
-def deactivated_application(application):
-    application.status = 'inactive'
-    with username_on_model(models.Application, 'initial'):
-        application.save()
-
-    return application
-
-
-@pytest.fixture
 def credential(team):
     credential = models.Credential(name='System user X', slug='SUX', team=team)
     with username_on_model(models.Credential, 'initial'):
@@ -147,3 +129,41 @@ def deactivated_scm_service(scm_service):
         scm_service.save()
 
     return scm_service
+
+
+@pytest.fixture
+def scm_repository(scm_service, credential):
+    scm_repository = models.SCMRepository(scm_service=scm_service, credential=credential,
+                                          organisation='acme', repository_name='sample')
+    with username_on_model(models.SCMRepository, 'initial'):
+        scm_repository.save()
+
+    return scm_repository
+
+
+@pytest.fixture
+def deactivated_scm_repository(scm_repository):
+    scm_repository.status = 'inactive'
+    with username_on_model(models.SCMRepository, 'initial'):
+        scm_repository.save()
+
+    return scm_repository
+
+
+@pytest.fixture
+def application(project, scm_repository):
+    application = models.Application(project=project, scm_repository=scm_repository, name='Application D', slug='APPD')
+    with username_on_model(models.Application, 'initial'):
+        application.save()
+
+    return application
+
+
+@pytest.fixture
+def deactivated_application(application):
+    application.status = 'inactive'
+    with username_on_model(models.Application, 'initial'):
+        application.save()
+
+    return application
+
