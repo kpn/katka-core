@@ -12,6 +12,7 @@ router = routers.SimpleRouter()
 router.register('teams', views.TeamViewSet, basename='teams')
 router.register('projects', views.ProjectViewSet, basename='projects')
 router.register('credentials', views.CredentialViewSet, basename='credentials')
+router.register('scm-services', views.SCMServiceViewSet, basename='scm-services')
 
 secrets_router = NestedSimpleRouter(router, 'credentials', lookup='credentials')
 secrets_router.register('secrets', views.CredentialSecretsViewSet, basename='secrets')

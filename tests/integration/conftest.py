@@ -111,3 +111,21 @@ def user(group):
 def logged_in_user(client, user):
     client.force_login(user)
     return user
+
+
+@pytest.fixture
+def scm_service():
+    scm_service = models.SCMService(type='bitbucket', server_url='www.example.com')
+    with username_on_model(models.SCMService, 'initial'):
+        scm_service.save()
+
+    return scm_service
+
+
+@pytest.fixture
+def deactivated_scm_service(scm_service):
+    scm_service.status = 'inactive'
+    with username_on_model(models.SCMService, 'initial'):
+        scm_service.save()
+
+    return scm_service
