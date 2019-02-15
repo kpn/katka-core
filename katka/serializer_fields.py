@@ -1,5 +1,5 @@
 from katka.constants import STATUS_ACTIVE
-from katka.models import Credential, Team
+from katka.models import Credential, Project, Team
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.relations import PrimaryKeyRelatedField
@@ -37,6 +37,18 @@ class TeamRelatedField(PrimaryKeyRelated403Field):
         """Only get the teams that are connected to a group that the user is a member of"""
         return Team.objects.filter(
             group__in=self.context['request'].user.groups.all(),
+            status=STATUS_ACTIVE
+        )
+
+
+class ProjectRelatedField(PrimaryKeyRelated403Field):
+    does_not_exist_message = 'Project does not exist or is not linked to your team'
+
+    def get_queryset(self):
+        """Only get the projects that are connected to a team that the user is a member of"""
+        return Project.objects.filter(
+            team__group__in=self.context['request'].user.groups.all(),
+            team__status=STATUS_ACTIVE,
             status=STATUS_ACTIVE
         )
 

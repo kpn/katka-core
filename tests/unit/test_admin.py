@@ -3,9 +3,11 @@ from django.contrib.auth.models import Group, User
 from django.test.client import RequestFactory
 
 import pytest
-from katka.admin import CredentialAdmin, CredentialSecretAdmin, ProjectAdmin, SCMServiceAdmin, TeamAdmin
+from katka.admin import (
+    ApplicationAdmin, CredentialAdmin, CredentialSecretAdmin, ProjectAdmin, SCMServiceAdmin, TeamAdmin,
+)
 from katka.fields import username_on_model
-from katka.models import Credential, CredentialSecret, Project, SCMService, Team
+from katka.models import Application, Credential, CredentialSecret, Project, SCMService, Team
 
 
 @pytest.fixture
@@ -32,8 +34,16 @@ def team(group):
 
 
 @pytest.fixture
+def project(team):
+    p = Project(name='project1', team=team)
+    with username_on_model(Project, 'audit_user'):
+        p.save()
+    return p
+
+
+@pytest.fixture
 def credential(team):
-    c = Credential(name='team', team=team)
+    c = Credential(name='credential1', team=team)
     with username_on_model(Credential, 'audit_user'):
         c.save()
     return c
@@ -55,6 +65,17 @@ class TestProjectAdmin:
         p = ProjectAdmin(Project, AdminSite())
         obj = Project(name='Project D', slug='PRJD', team=team)
         p.save_model(mock_request, obj, None, None)
+
+        assert obj.created_username == 'mock1'
+        assert obj.modified_username == 'mock1'
+
+
+@pytest.mark.django_db
+class TestApplicationAdmin:
+    def test_save_stores_username(self, mock_request, project):
+        a = ApplicationAdmin(Application, AdminSite())
+        obj = Application(name='Application D', slug='APPD', project=project)
+        a.save_model(mock_request, obj, None, None)
 
         assert obj.created_username == 'mock1'
         assert obj.modified_username == 'mock1'
