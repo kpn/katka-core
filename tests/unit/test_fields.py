@@ -1,22 +1,8 @@
-from django.db import models
-
 import pytest
 from katka.exceptions import MissingUsername
-from katka.fields import AutoUsernameField, username_on_model
+from katka.fields import username_on_model
 
-
-class AlwaysUpdate(models.Model):
-    field = AutoUsernameField()
-
-    class Meta:
-        app_label = 'katka'
-
-
-class OnlyOnCreate(models.Model):
-    field = AutoUsernameField(only_on_create=True)
-
-    class Meta:
-        app_label = 'katka'
+from .models import AlwaysUpdate, OnlyOnCreate
 
 
 @pytest.mark.django_db
