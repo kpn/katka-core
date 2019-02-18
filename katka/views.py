@@ -1,7 +1,7 @@
-from katka.models import Application, Credential, CredentialSecret, Project, SCMService, Team
+from katka.models import Application, Credential, CredentialSecret, Project, SCMRepository, SCMService, Team
 from katka.serializers import (
-    ApplicationSerializer, CredentialSecretSerializer, CredentialSerializer, ProjectSerializer, SCMServiceSerializer,
-    TeamSerializer,
+    ApplicationSerializer, CredentialSecretSerializer, CredentialSerializer, ProjectSerializer,
+    SCMRepositorySerializer, SCMServiceSerializer, TeamSerializer,
 )
 from katka.viewsets import AuditViewSet, ReadOnlyAuditViewMixin
 from rest_framework.permissions import IsAuthenticated
@@ -60,3 +60,12 @@ class SCMServiceViewSet(ReadOnlyAuditViewMixin):
     model = SCMService
     serializer_class = SCMServiceSerializer
     permission_classes = [IsAuthenticated]
+
+
+class SCMRepositoryViewSet(AuditViewSet):
+    model = SCMRepository
+    serializer_class = SCMRepositorySerializer
+
+    def get_queryset(self):
+        user_groups = self.request.user.groups.all()
+        return super().get_queryset().filter(credential__team__group__in=user_groups)
