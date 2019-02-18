@@ -166,4 +166,3 @@ def deactivated_application(application):
         application.save()
 
     return application
-
