@@ -26,6 +26,8 @@ INSTALLED_APPS = [
 
     'katka',
 
+    'tests.unit',
+
     'encrypted_model_fields'
 ]
 
