@@ -31,19 +31,6 @@ class Project(AuditedModel):
         return f'{self.name}'
 
 
-class Application(AuditedModel):
-    public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    slug = KatkaSlugField()
-    name = models.CharField(max_length=100)
-    project = models.ForeignKey(Project, on_delete=models.PROTECT)
-
-    class Meta:
-        unique_together = ('project', 'slug')
-
-    def __str__(self):  # pragma: no cover
-        return f'{self.name}'
-
-
 class Credential(AuditedModel):
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     slug = KatkaSlugField()
@@ -78,3 +65,29 @@ class SCMService(AuditedModel):
 
     def __str__(self):  # pragma: no cover
         return f'{self.type}/{self.server_url}'
+
+
+class SCMRepository(AuditedModel):
+
+    public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organisation = models.CharField(max_length=128)
+    repository_name = models.CharField(max_length=128)
+    credential = models.ForeignKey(Credential, on_delete=models.PROTECT)
+    scm_service = models.ForeignKey(SCMService, on_delete=models.PROTECT)
+
+    def __str__(self):  # pragma: no cover
+        return f'{self.organisation}/{self.repository_name}'
+
+
+class Application(AuditedModel):
+    public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    slug = KatkaSlugField()
+    name = models.CharField(max_length=100)
+    project = models.ForeignKey(Project, on_delete=models.PROTECT)
+    scm_repository = models.OneToOneField(SCMRepository, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = ('project', 'slug')
+
+    def __str__(self):  # pragma: no cover
+        return f'{self.name}'

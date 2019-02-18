@@ -1,5 +1,5 @@
 from katka.constants import STATUS_ACTIVE
-from katka.models import Credential, Project, Team
+from katka.models import Credential, Project, SCMRepository, Team
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.relations import PrimaryKeyRelatedField
@@ -61,4 +61,14 @@ class CredentialRelatedField(PrimaryKeyRelated403Field):
             team__group__in=self.context['request'].user.groups.all(),
             team__status=STATUS_ACTIVE,
             status=STATUS_ACTIVE,
+        )
+
+
+class SCMRepositoryRelatedField(PrimaryKeyRelated403Field):
+    does_not_exist_message = 'SCMRepository does not exist'
+
+    def get_queryset(self):
+        return SCMRepository.objects.filter(
+            scm_service__status=STATUS_ACTIVE,
+            status=STATUS_ACTIVE
         )

@@ -7,7 +7,7 @@ from katka.admin import (
     ApplicationAdmin, CredentialAdmin, CredentialSecretAdmin, ProjectAdmin, SCMServiceAdmin, TeamAdmin,
 )
 from katka.fields import username_on_model
-from katka.models import Application, Credential, CredentialSecret, Project, SCMService, Team
+from katka.models import Application, Credential, CredentialSecret, Project, SCMRepository, SCMService, Team
 
 
 @pytest.fixture
@@ -49,6 +49,23 @@ def credential(team):
     return c
 
 
+@pytest.fixture
+def scm_service():
+    scm_service = SCMService(type='bitbucket', server_url='www.example.com')
+    with username_on_model(SCMService, 'audit_user'):
+        scm_service.save()
+    return scm_service
+
+
+@pytest.fixture
+def scm_repository(scm_service, credential):
+    scm_repository = SCMRepository(scm_service=scm_service, credential=credential,
+                                   organisation='acme', repository_name='sample')
+    with username_on_model(SCMRepository, 'audit_user'):
+        scm_repository.save()
+    return scm_repository
+
+
 @pytest.mark.django_db
 class TestTeamAdmin:
     def test_save_stores_username(self, mock_request, group):
@@ -72,9 +89,9 @@ class TestProjectAdmin:
 
 @pytest.mark.django_db
 class TestApplicationAdmin:
-    def test_save_stores_username(self, mock_request, project):
+    def test_save_stores_username(self, mock_request, project, scm_repository):
         a = ApplicationAdmin(Application, AdminSite())
-        obj = Application(name='Application D', slug='APPD', project=project)
+        obj = Application(name='Application D', slug='APPD', project=project, scm_repository=scm_repository)
         a.save_model(mock_request, obj, None, None)
 
         assert obj.created_username == 'mock1'
