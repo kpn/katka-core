@@ -1,5 +1,5 @@
 from katka.constants import STATUS_ACTIVE
-from katka.models import Credential, Project, SCMRepository, SCMService, Team
+from katka.models import Application, Credential, Project, SCMRepository, SCMService, Team
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.relations import PrimaryKeyRelatedField
@@ -37,7 +37,7 @@ class TeamRelatedField(PrimaryKeyRelated403Field):
         """Only get the teams that are connected to a group that the user is a member of"""
         return Team.objects.filter(
             group__in=self.context['request'].user.groups.all(),
-            status=STATUS_ACTIVE
+            deleted=False
         )
 
 
@@ -48,8 +48,8 @@ class ProjectRelatedField(PrimaryKeyRelated403Field):
         """Only get the projects that are connected to a team that the user is a member of"""
         return Project.objects.filter(
             team__group__in=self.context['request'].user.groups.all(),
-            team__status=STATUS_ACTIVE,
-            status=STATUS_ACTIVE
+            team__deleted=False,
+            deleted=False
         )
 
 
@@ -59,8 +59,8 @@ class CredentialRelatedField(PrimaryKeyRelated403Field):
     def get_queryset(self):
         return Credential.objects.filter(
             team__group__in=self.context['request'].user.groups.all(),
-            team__status=STATUS_ACTIVE,
-            status=STATUS_ACTIVE,
+            team__deleted=False,
+            deleted=False,
         )
 
 
@@ -69,7 +69,7 @@ class SCMServiceRelatedField(PrimaryKeyRelated403Field):
 
     def get_queryset(self):
         return SCMService.objects.filter(
-            status=STATUS_ACTIVE
+            deleted=False
         )
 
 
@@ -78,7 +78,19 @@ class SCMRepositoryRelatedField(PrimaryKeyRelated403Field):
 
     def get_queryset(self):
         return SCMRepository.objects.filter(
-            scm_service__status=STATUS_ACTIVE,
-            credential__status=STATUS_ACTIVE,
-            status=STATUS_ACTIVE
+            scm_service__deleted=False,
+            credential__deleted=False,
+            deleted=False
+        )
+
+
+class ApplicationRelatedField(PrimaryKeyRelated403Field):
+    does_not_exist_message = 'Application does not exist or does not belong to your team'
+
+    def get_queryset(self):
+        return Application.objects.filter(
+            project__team__group__in=self.context['request'].user.groups.all(),
+            project__team__deleted=False,
+            project__deleted=False,
+            deleted=False
         )

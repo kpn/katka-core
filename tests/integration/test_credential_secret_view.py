@@ -2,7 +2,6 @@ from uuid import UUID
 
 import pytest
 from katka import models
-from katka.constants import STATUS_INACTIVE
 
 
 @pytest.mark.django_db
@@ -80,7 +79,7 @@ class TestCredentialViewSet:
         response = client.delete(url)
         assert response.status_code == 204
         s = models.CredentialSecret.objects.get(key=secret.key, credential=credential)
-        assert s.status == STATUS_INACTIVE
+        assert s.deleted is True
 
     def test_update(self, client, logged_in_user, team, credential, secret):
         url = f'/credentials/{credential.public_identifier}/secrets/{secret.key}/'

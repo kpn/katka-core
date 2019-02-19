@@ -2,7 +2,6 @@ from uuid import UUID
 
 import pytest
 from katka import models
-from katka.constants import STATUS_INACTIVE
 
 
 @pytest.mark.django_db
@@ -88,7 +87,7 @@ class TestSCMRepositoryViewSet:
         response = client.delete(f'/scm-repositories/{scm_repository.public_identifier}/')
         assert response.status_code == 204
         p = models.SCMRepository.objects.get(pk=scm_repository.public_identifier)
-        assert p.status == STATUS_INACTIVE
+        assert p.deleted is True
 
     def test_update(self, client, logged_in_user, credential, scm_service, scm_repository):
         url = f'/scm-repositories/{scm_repository.public_identifier}/'

@@ -1,4 +1,3 @@
-from katka.constants import STATUS_INACTIVE
 from katka.fields import username_on_model
 from rest_framework import mixins, status
 from rest_framework.response import Response
@@ -11,7 +10,7 @@ class ReadOnlyAuditViewMixin(mixins.RetrieveModelMixin,
     model = None
 
     def get_queryset(self):
-        return self.model.objects.exclude(status=STATUS_INACTIVE)
+        return self.model.objects.exclude(deleted=True)
 
 
 class AuditViewSet(mixins.CreateModelMixin,
@@ -29,7 +28,7 @@ class AuditViewSet(mixins.CreateModelMixin,
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.status = STATUS_INACTIVE
+        instance.deleted = True
 
         with username_on_model(self.model, request.user.username):
             instance.save()

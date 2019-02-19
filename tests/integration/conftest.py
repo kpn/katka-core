@@ -2,7 +2,6 @@ from django.contrib.auth.models import Group, User
 
 import pytest
 from katka import models
-from katka.constants import STATUS_INACTIVE
 from katka.fields import username_on_model
 
 
@@ -48,7 +47,7 @@ def team(my_team, not_my_team):
 
 @pytest.fixture
 def deactivated_team(team):
-    team.status = STATUS_INACTIVE
+    team.deleted = True
     with username_on_model(models.Team, 'deactivator'):
         team.save()
 
@@ -66,7 +65,7 @@ def project(team):
 
 @pytest.fixture
 def deactivated_project(team, project):
-    project.status = 'inactive'
+    project.deleted = True
     with username_on_model(models.Project, 'initial'):
         project.save()
 
@@ -93,7 +92,7 @@ def secret(credential):
 
 @pytest.fixture
 def deactivated_secret(secret):
-    secret.status = 'inactive'
+    secret.deleted = True
     with username_on_model(models.CredentialSecret, 'initial'):
         secret.save()
 
@@ -124,7 +123,7 @@ def scm_service():
 
 @pytest.fixture
 def deactivated_scm_service(scm_service):
-    scm_service.status = 'inactive'
+    scm_service.deleted = True
     with username_on_model(models.SCMService, 'initial'):
         scm_service.save()
 
@@ -143,7 +142,7 @@ def scm_repository(scm_service, credential):
 
 @pytest.fixture
 def deactivated_scm_repository(scm_repository):
-    scm_repository.status = 'inactive'
+    scm_repository.deleted = True
     with username_on_model(models.SCMRepository, 'initial'):
         scm_repository.save()
 
@@ -161,7 +160,7 @@ def application(project, scm_repository):
 
 @pytest.fixture
 def deactivated_application(application):
-    application.status = 'inactive'
+    application.deleted = True
     with username_on_model(models.Application, 'initial'):
         application.save()
 
