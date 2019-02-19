@@ -4,7 +4,6 @@ from django.contrib.auth.models import Group
 
 import pytest
 from katka import models
-from katka.constants import STATUS_INACTIVE
 
 
 @pytest.mark.django_db
@@ -78,7 +77,7 @@ class TestTeamViewSet:
         response = client.delete(f'/teams/{team.public_identifier}/')
         assert response.status_code == 204
         t = models.Team.objects.get(pk=team.public_identifier)
-        assert t.status == STATUS_INACTIVE
+        assert t.deleted is True
 
     def test_update(self, client, logged_in_user, team):
         data = {'name': 'B-Team', 'slug': 'BTM', 'group': 'group1'}

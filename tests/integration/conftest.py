@@ -2,7 +2,7 @@ from django.contrib.auth.models import Group, User
 
 import pytest
 from katka import models
-from katka.constants import STATUS_INACTIVE
+from katka.constants import PIPELINE_STATUS_INPROGRESS
 from katka.fields import username_on_model
 
 
@@ -48,7 +48,7 @@ def team(my_team, not_my_team):
 
 @pytest.fixture
 def deactivated_team(team):
-    team.status = STATUS_INACTIVE
+    team.deleted = True
     with username_on_model(models.Team, 'deactivator'):
         team.save()
 
@@ -66,7 +66,7 @@ def project(team):
 
 @pytest.fixture
 def deactivated_project(team, project):
-    project.status = 'inactive'
+    project.deleted = True
     with username_on_model(models.Project, 'initial'):
         project.save()
 
@@ -93,7 +93,7 @@ def secret(credential):
 
 @pytest.fixture
 def deactivated_secret(secret):
-    secret.status = 'inactive'
+    secret.deleted = True
     with username_on_model(models.CredentialSecret, 'initial'):
         secret.save()
 
@@ -124,7 +124,7 @@ def scm_service():
 
 @pytest.fixture
 def deactivated_scm_service(scm_service):
-    scm_service.status = 'inactive'
+    scm_service.deleted = True
     with username_on_model(models.SCMService, 'initial'):
         scm_service.save()
 
@@ -143,7 +143,7 @@ def scm_repository(scm_service, credential):
 
 @pytest.fixture
 def deactivated_scm_repository(scm_repository):
-    scm_repository.status = 'inactive'
+    scm_repository.deleted = True
     with username_on_model(models.SCMRepository, 'initial'):
         scm_repository.save()
 
@@ -161,8 +161,36 @@ def application(project, scm_repository):
 
 @pytest.fixture
 def deactivated_application(application):
-    application.status = 'inactive'
+    application.deleted = True
     with username_on_model(models.Application, 'initial'):
         application.save()
 
     return application
+
+
+@pytest.fixture
+def scm_pipeline_run(application):
+    pipeline_yaml = '''stages:
+  - release
+
+do-release:
+  stage: release
+'''
+    scm_pipeline_run = models.SCMPipelineRun(application=application,
+                                             pipeline_yaml=pipeline_yaml,
+                                             status=PIPELINE_STATUS_INPROGRESS,
+                                             steps_total=5,
+                                             commit_hash='4015B57A143AEC5156FD1444A017A32137A3FD0F')
+    with username_on_model(models.SCMPipelineRun, 'initial'):
+        scm_pipeline_run.save()
+
+    return scm_pipeline_run
+
+
+@pytest.fixture
+def deactivated_scm_pipeline_run(scm_pipeline_run):
+    scm_pipeline_run.deleted = True
+    with username_on_model(models.SCMPipelineRun, 'initial'):
+        scm_pipeline_run.save()
+
+    return scm_pipeline_run

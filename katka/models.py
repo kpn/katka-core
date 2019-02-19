@@ -5,6 +5,7 @@ from django.db import models
 
 from encrypted_model_fields.fields import EncryptedCharField
 from katka.auditedmodel import AuditedModel
+from katka.constants import PIPELINE_STATUS_CHOICES, PIPELINE_STATUS_INPROGRESS
 from katka.fields import KatkaSlugField
 
 
@@ -91,3 +92,14 @@ class Application(AuditedModel):
 
     def __str__(self):  # pragma: no cover
         return f'{self.name}'
+
+
+# Pipeline run results
+class SCMPipelineRun(AuditedModel):
+    public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    commit_hash = models.CharField(max_length=64)  # A SHA-1 hash is 40 characters, SHA-256 is 64 characters
+    status = models.CharField(max_length=30, choices=PIPELINE_STATUS_CHOICES, default=PIPELINE_STATUS_INPROGRESS)
+    steps_total = models.PositiveSmallIntegerField()
+    steps_completed = models.PositiveSmallIntegerField(default=0)
+    pipeline_yaml = models.TextField()
+    application = models.ForeignKey(Application, on_delete=models.PROTECT)

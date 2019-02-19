@@ -2,7 +2,6 @@ from uuid import UUID
 
 import pytest
 from katka import models
-from katka.constants import STATUS_INACTIVE
 
 
 @pytest.mark.django_db
@@ -80,7 +79,7 @@ class TestApplicationViewSet:
         response = client.delete(f'/applications/{application.public_identifier}/')
         assert response.status_code == 204
         a = models.Application.objects.get(pk=application.public_identifier)
-        assert a.status == STATUS_INACTIVE
+        assert a.deleted is True
 
     def test_update(self, client, logged_in_user, project, application, scm_repository):
         url = f'/applications/{application.public_identifier}/'
