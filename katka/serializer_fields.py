@@ -1,4 +1,3 @@
-from katka.constants import STATUS_ACTIVE
 from katka.models import Application, Credential, Project, SCMRepository, SCMService, Team
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied

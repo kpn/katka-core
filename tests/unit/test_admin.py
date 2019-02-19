@@ -4,10 +4,14 @@ from django.test.client import RequestFactory
 
 import pytest
 from katka.admin import (
-    ApplicationAdmin, CredentialAdmin, CredentialSecretAdmin, ProjectAdmin, SCMServiceAdmin, TeamAdmin,
+    ApplicationAdmin, CredentialAdmin, CredentialSecretAdmin, ProjectAdmin, SCMPipelineRunAdmin, SCMRepositoryAdmin,
+    SCMServiceAdmin, TeamAdmin,
 )
+from katka.constants import PIPELINE_STATUS_INPROGRESS
 from katka.fields import username_on_model
-from katka.models import Application, Credential, CredentialSecret, Project, SCMRepository, SCMService, Team
+from katka.models import (
+    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRepository, SCMService, Team,
+)
 
 
 @pytest.fixture
@@ -64,6 +68,14 @@ def scm_repository(scm_service, credential):
     with username_on_model(SCMRepository, 'audit_user'):
         scm_repository.save()
     return scm_repository
+
+
+@pytest.fixture
+def application(project, scm_repository):
+    app = Application(name='application1', project=project, scm_repository=scm_repository)
+    with username_on_model(Application, 'audit_user'):
+        app.save()
+    return app
 
 
 @pytest.mark.django_db
@@ -125,6 +137,32 @@ class TestSCMServiceAdmin:
     def test_save_stores_username(self, mock_request):
         c = SCMServiceAdmin(SCMService, AdminSite())
         obj = SCMService(type='git', server_url='www.example.com')
+        c.save_model(mock_request, obj, None, None)
+
+        assert obj.created_username == 'mock1'
+        assert obj.modified_username == 'mock1'
+
+
+@pytest.mark.django_db
+class TestSCMRepositoryAdmin:
+    def test_save_stores_username(self, mock_request, credential, scm_service):
+        c = SCMRepositoryAdmin(SCMRepository, AdminSite())
+        obj = SCMRepository(organisation='mock', repository_name='katka',
+                            credential=credential, scm_service=scm_service)
+        c.save_model(mock_request, obj, None, None)
+
+        assert obj.created_username == 'mock1'
+        assert obj.modified_username == 'mock1'
+
+
+@pytest.mark.django_db
+class TestSCMPipelineRunAdmin:
+    def test_save_stores_username(self, mock_request, application):
+        c = SCMPipelineRunAdmin(SCMPipelineRun, AdminSite())
+        obj = SCMPipelineRun(commit_hash='4015B57A143AEC5156FD1444A017A32137A3FD0F',
+                             status=PIPELINE_STATUS_INPROGRESS,
+                             steps_total=5,
+                             application=application)
         c.save_model(mock_request, obj, None, None)
 
         assert obj.created_username == 'mock1'
