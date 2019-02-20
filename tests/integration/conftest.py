@@ -2,7 +2,7 @@ from django.contrib.auth.models import Group, User
 
 import pytest
 from katka import models
-from katka.constants import PIPELINE_STATUS_INPROGRESS
+from katka.constants import PIPELINE_STATUS_INPROGRESS, STEP_STATUS_INPROGRESS
 from katka.fields import username_on_model
 
 
@@ -194,3 +194,24 @@ def deactivated_scm_pipeline_run(scm_pipeline_run):
         scm_pipeline_run.save()
 
     return scm_pipeline_run
+
+
+@pytest.fixture
+def scm_step_run(scm_pipeline_run):
+    scm_step_run = models.SCMStepRun(slug='release', name='Release Katka', stage='Production',
+                                     status=STEP_STATUS_INPROGRESS,
+                                     scm_pipeline_run=scm_pipeline_run)
+
+    with username_on_model(models.SCMStepRun, 'initial'):
+        scm_step_run.save()
+
+    return scm_step_run
+
+
+@pytest.fixture
+def deactivated_scm_step_run(scm_step_run):
+    scm_step_run.deleted = True
+    with username_on_model(models.SCMStepRun, 'initial'):
+        scm_step_run.save()
+
+    return scm_step_run

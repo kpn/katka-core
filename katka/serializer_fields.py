@@ -1,4 +1,4 @@
-from katka.models import Application, Credential, Project, SCMRepository, SCMService, Team
+from katka.models import Application, Credential, Project, SCMPipelineRun, SCMRepository, SCMService, Team
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.relations import PrimaryKeyRelatedField
@@ -91,5 +91,18 @@ class ApplicationRelatedField(PrimaryKeyRelated403Field):
             project__team__group__in=self.context['request'].user.groups.all(),
             project__team__deleted=False,
             project__deleted=False,
+            deleted=False
+        )
+
+
+class SCMPipelineRunRelatedField(PrimaryKeyRelated403Field):
+    does_not_exist_message = 'SCM Pipeline Run does not exist or does not belong to your team'
+
+    def get_queryset(self):
+        return SCMPipelineRun.objects.filter(
+            application__project__team__group__in=self.context['request'].user.groups.all(),
+            application__project__team__deleted=False,
+            application__project__deleted=False,
+            application__deleted=False,
             deleted=False
         )

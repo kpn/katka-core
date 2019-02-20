@@ -1,9 +1,9 @@
 from katka.models import (
-    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRepository, SCMService, Team,
+    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRepository, SCMService, SCMStepRun, Team,
 )
 from katka.serializers import (
     ApplicationSerializer, CredentialSecretSerializer, CredentialSerializer, ProjectSerializer,
-    SCMPipelineRunSerializer, SCMRepositorySerializer, SCMServiceSerializer, TeamSerializer,
+    SCMPipelineRunSerializer, SCMRepositorySerializer, SCMServiceSerializer, SCMStepRunSerializer, TeamSerializer,
 )
 from katka.viewsets import AuditViewSet, ReadOnlyAuditViewMixin
 from rest_framework.permissions import IsAuthenticated
@@ -80,3 +80,12 @@ class SCMPipelineRunViewSet(AuditViewSet):
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
         return super().get_queryset().filter(application__project__team__group__in=user_groups)
+
+
+class SCMStepRunViewSet(AuditViewSet):
+    model = SCMStepRun
+    serializer_class = SCMStepRunSerializer
+
+    def get_queryset(self):
+        user_groups = self.request.user.groups.all()
+        return super().get_queryset().filter(scm_pipeline_run__application__project__team__group__in=user_groups)

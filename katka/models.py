@@ -5,7 +5,9 @@ from django.db import models
 
 from encrypted_model_fields.fields import EncryptedCharField
 from katka.auditedmodel import AuditedModel
-from katka.constants import PIPELINE_STATUS_CHOICES, PIPELINE_STATUS_INPROGRESS
+from katka.constants import (
+    PIPELINE_STATUS_CHOICES, PIPELINE_STATUS_INPROGRESS, STEP_STATUS_CHOICES, STEP_STATUS_INPROGRESS,
+)
 from katka.fields import KatkaSlugField
 
 
@@ -103,3 +105,13 @@ class SCMPipelineRun(AuditedModel):
     steps_completed = models.PositiveSmallIntegerField(default=0)
     pipeline_yaml = models.TextField()
     application = models.ForeignKey(Application, on_delete=models.PROTECT)
+
+
+class SCMStepRun(AuditedModel):
+    public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    slug = KatkaSlugField(max_length=30)
+    name = models.CharField(max_length=100)
+    stage = models.CharField(max_length=100)
+    status = models.CharField(max_length=30, choices=STEP_STATUS_CHOICES, default=STEP_STATUS_INPROGRESS)
+    output = models.TextField(blank=True)
+    scm_pipeline_run = models.ForeignKey(SCMPipelineRun, on_delete=models.PROTECT)
