@@ -5,12 +5,12 @@ from django.test.client import RequestFactory
 import pytest
 from katka.admin import (
     ApplicationAdmin, CredentialAdmin, CredentialSecretAdmin, ProjectAdmin, SCMPipelineRunAdmin, SCMRepositoryAdmin,
-    SCMServiceAdmin, TeamAdmin,
+    SCMServiceAdmin, SCMStepRunAdmin, TeamAdmin,
 )
-from katka.constants import PIPELINE_STATUS_INPROGRESS
+from katka.constants import PIPELINE_STATUS_INPROGRESS, STEP_STATUS_INPROGRESS
 from katka.fields import username_on_model
 from katka.models import (
-    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRepository, SCMService, Team,
+    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRepository, SCMService, SCMStepRun, Team,
 )
 
 
@@ -76,6 +76,25 @@ def application(project, scm_repository):
     with username_on_model(Application, 'audit_user'):
         app.save()
     return app
+
+
+@pytest.fixture
+def scm_pipeline_run(application):
+    pipeline_yaml = '''stages:
+      - release
+
+    do-release:
+      stage: release
+    '''
+    scm_pipeline_run = SCMPipelineRun(application=application,
+                                      pipeline_yaml=pipeline_yaml,
+                                      status=PIPELINE_STATUS_INPROGRESS,
+                                      steps_total=5,
+                                      commit_hash='4015B57A143AEC5156FD1444A017A32137A3FD0F')
+    with username_on_model(SCMPipelineRun, 'audit_user'):
+        scm_pipeline_run.save()
+
+    return scm_pipeline_run
 
 
 @pytest.mark.django_db
@@ -163,6 +182,19 @@ class TestSCMPipelineRunAdmin:
                              status=PIPELINE_STATUS_INPROGRESS,
                              steps_total=5,
                              application=application)
+        c.save_model(mock_request, obj, None, None)
+
+        assert obj.created_username == 'mock1'
+        assert obj.modified_username == 'mock1'
+
+
+@pytest.mark.django_db
+class TestSCMStepRunAdmin:
+    def test_save_stores_username(self, mock_request, scm_pipeline_run):
+        c = SCMStepRunAdmin(SCMStepRun, AdminSite())
+        obj = SCMStepRun(slug='release', name='Release Katka', stage='Production',
+                         status=STEP_STATUS_INPROGRESS,
+                         scm_pipeline_run=scm_pipeline_run)
         c.save_model(mock_request, obj, None, None)
 
         assert obj.created_username == 'mock1'

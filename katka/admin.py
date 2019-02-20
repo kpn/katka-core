@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from katka.fields import username_on_model
 from katka.models import (
-    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRepository, SCMService, Team,
+    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRepository, SCMService, SCMStepRun, Team,
 )
 
 
@@ -49,4 +49,9 @@ class SCMRepositoryAdmin(WithUsernameAdminModel):
 
 @admin.register(SCMPipelineRun)
 class SCMPipelineRunAdmin(WithUsernameAdminModel):
-    fields = ('commit_hash', 'application')
+    fields = ('commit_hash', 'status', 'steps_total', 'steps_completed', 'pipeline_yaml', 'application')
+
+
+@admin.register(SCMStepRun)
+class SCMStepRunAdmin(WithUsernameAdminModel):
+    fields = ('slug', 'name', 'stage', 'status', 'output', 'scm_pipeline_run')

@@ -1,4 +1,4 @@
-# Pipeline Status is not in the model to allow usage in different
+# Status is not in the model to allow usage in different models
 PIPELINE_STATUS_FAIL = 'failed'
 PIPELINE_STATUS_SUCCESS = 'success'
 PIPELINE_STATUS_INPROGRESS = 'in progress'
@@ -7,4 +7,18 @@ PIPELINE_STATUS_CHOICES = (
     (PIPELINE_STATUS_FAIL, PIPELINE_STATUS_FAIL),
     (PIPELINE_STATUS_SUCCESS, PIPELINE_STATUS_SUCCESS),
     (PIPELINE_STATUS_INPROGRESS, PIPELINE_STATUS_INPROGRESS),
+)
+
+STEP_STATUS_FAIL = 'failed'
+STEP_STATUS_SUCCESS = 'success'
+STEP_STATUS_INPROGRESS = 'in progress'
+STEP_STATUS_BLOCKED = 'blocked'  # A step cannot proceed until some action is completed
+STEP_STATUS_SKIPPED = 'skipped'  # A step is skipped due to some conditional
+
+STEP_STATUS_CHOICES = (
+    (STEP_STATUS_FAIL, STEP_STATUS_FAIL),
+    (STEP_STATUS_SUCCESS, STEP_STATUS_SUCCESS),
+    (STEP_STATUS_INPROGRESS, STEP_STATUS_INPROGRESS),
+    (STEP_STATUS_BLOCKED, STEP_STATUS_BLOCKED),
+    (STEP_STATUS_SKIPPED, STEP_STATUS_SKIPPED),
 )

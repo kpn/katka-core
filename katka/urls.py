@@ -16,6 +16,8 @@ router.register('credentials', views.CredentialViewSet, basename='credentials')
 router.register('scm-services', views.SCMServiceViewSet, basename='scm-services')
 router.register('scm-repositories', views.SCMRepositoryViewSet, basename='scm-repositories')
 router.register('scm-pipeline-runs', views.SCMPipelineRunViewSet, basename='scm-pipeline-runs')
+router.register('scm-step-runs', views.SCMStepRunViewSet, basename='scm-step-runs')
+
 
 secrets_router = NestedSimpleRouter(router, 'credentials', lookup='credentials')
 secrets_router.register('secrets', views.CredentialSecretsViewSet, basename='secrets')
