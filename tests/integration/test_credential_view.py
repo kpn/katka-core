@@ -58,6 +58,7 @@ class TestCredentialViewSet:
         assert response.status_code == 200
         parsed = response.json()
         assert len(parsed) == 1
+        assert UUID(parsed[0]['public_identifier']) == credential.public_identifier
         assert parsed[0]['name'] == 'System user X'
         parsed_team = parsed[0]['team']
         assert UUID(parsed_team) == team.public_identifier
@@ -66,6 +67,7 @@ class TestCredentialViewSet:
         response = client.get(f'/credentials/{credential.public_identifier}/')
         assert response.status_code == 200
         parsed = response.json()
+        assert UUID(parsed['public_identifier']) == credential.public_identifier
         assert parsed['name'] == 'System user X'
         assert UUID(parsed['team']) == team.public_identifier
 

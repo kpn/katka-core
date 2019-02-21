@@ -47,7 +47,7 @@ class CredentialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Credential
-        fields = ('name', 'slug', 'team')
+        fields = ('public_identifier', 'name', 'slug', 'team')
 
 
 class CredentialSecretSerializer(serializers.ModelSerializer):
