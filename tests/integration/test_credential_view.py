@@ -57,7 +57,7 @@ class TestCredentialViewSet:
         response = client.get(f'/credentials/')
         assert response.status_code == 200
         parsed = response.json()
-        assert len(parsed) == 1
+        assert len(parsed) == 2
         assert UUID(parsed[0]['public_identifier']) == credential.public_identifier
         assert parsed[0]['name'] == 'System user X'
         parsed_team = parsed[0]['team']
@@ -104,9 +104,10 @@ class TestCredentialViewSet:
         assert p.name == 'System User Y'
 
     def test_create(self, client, logged_in_user, team, credential):
+        before_count = models.Credential.objects.count()
         url = f'/credentials/'
         data = {'name': 'System User Y', 'slug': 'SUY', 'team': team.public_identifier}
         response = client.post(url, data=data, content_type='application/json')
         assert response.status_code == 201
         models.Credential.objects.get(name='System User Y')
-        assert models.Credential.objects.count() == 2
+        assert models.Credential.objects.count() == before_count + 1

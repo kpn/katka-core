@@ -55,7 +55,12 @@ class CredentialSecretsViewSet(AuditViewSet):
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
-        return super().get_queryset().filter(credential__team__group__in=user_groups)
+        kwargs = {
+            'credential__team__group__in': user_groups,
+            'credential__deleted': False,
+            'credential': self.kwargs['credentials_pk'],
+        }
+        return super().get_queryset().filter(**kwargs)
 
 
 class SCMServiceViewSet(ReadOnlyAuditViewMixin):
