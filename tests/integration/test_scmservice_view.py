@@ -15,7 +15,7 @@ class TestSCMServiceViewSet:
         assert response.status_code == 200
         parsed = response.json()
         assert len(parsed) == 1
-        assert parsed[0]['type'] == 'bitbucket'
+        assert parsed[0]['scm_service_type'] == 'bitbucket'
         assert parsed[0]['server_url'] == 'www.example.com'
         UUID(parsed[0]['public_identifier'])  # should not raise
 
@@ -29,7 +29,7 @@ class TestSCMServiceViewSet:
         response = client.get(f'/scm-services/{scm_service.public_identifier}/')
         assert response.status_code == 200
         parsed = response.json()
-        assert parsed['type'] == 'bitbucket'
+        assert parsed['scm_service_type'] == 'bitbucket'
         assert parsed['server_url'] == 'www.example.com'
         UUID(parsed['public_identifier'])  # should not raise
 
@@ -42,20 +42,20 @@ class TestSCMServiceViewSet:
         assert response.status_code == 405
 
     def test_update_not_allowed(self, client, logged_in_user, scm_service):
-        data = {'type': 'git', 'server_url': 'www.example.org'}
+        data = {'scm_service_type': 'git', 'server_url': 'www.example.org'}
         response = client.put(f'/scm-services/{scm_service.public_identifier}/',
                               data,
                               content_type='application/json')
         assert response.status_code == 405
 
     def test_partial_update_not_allowed(self, client, logged_in_user, scm_service):
-        data = {'type': 'git'}
+        data = {'scm_service_type': 'git'}
         response = client.patch(f'/scm-services/{scm_service.public_identifier}/',
                                 data,
                                 content_type='application/json')
         assert response.status_code == 405
 
     def test_create_not_allowed(self, client, logged_in_user, scm_service):
-        data = {'type': 'bitbucket', 'server_url': 'www.example.com'}
+        data = {'scm_service_type': 'bitbucket', 'server_url': 'www.example.com'}
         response = client.post(f'/scm-services/', data, content_type='application/json')
         assert response.status_code == 405

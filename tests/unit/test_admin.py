@@ -55,7 +55,7 @@ def credential(team):
 
 @pytest.fixture
 def scm_service():
-    scm_service = SCMService(type='bitbucket', server_url='www.example.com')
+    scm_service = SCMService(scm_service_type='bitbucket', server_url='www.example.com')
     with username_on_model(SCMService, 'audit_user'):
         scm_service.save()
     return scm_service
@@ -155,7 +155,7 @@ class TestCredentialSecretAdmin:
 class TestSCMServiceAdmin:
     def test_save_stores_username(self, mock_request):
         c = SCMServiceAdmin(SCMService, AdminSite())
-        obj = SCMService(type='git', server_url='www.example.com')
+        obj = SCMService(scm_service_type='git', server_url='www.example.com')
         c.save_model(mock_request, obj, None, None)
 
         assert obj.created_username == 'mock1'

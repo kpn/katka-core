@@ -39,7 +39,7 @@ class CredentialSecretAdmin(WithUsernameAdminModel):
 
 @admin.register(SCMService)
 class SCMServiceAdmin(WithUsernameAdminModel):
-    fields = ('type', 'server_url')
+    fields = ('scm_service_type', 'server_url')
 
 
 @admin.register(SCMRepository)
