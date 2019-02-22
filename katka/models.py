@@ -45,7 +45,7 @@ class Credential(AuditedModel):
         unique_together = ('team', 'slug')
 
     def __str__(self):  # pragma: no cover
-        return f'{self.name}'
+        return f'{self.credential_type}/{self.name}'
 
 
 class CredentialSecret(AuditedModel):
@@ -63,11 +63,11 @@ class CredentialSecret(AuditedModel):
 class SCMService(AuditedModel):
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    type = models.CharField(max_length=48)
+    scm_service_type = models.CharField(max_length=48)
     server_url = models.URLField(null=False)
 
     def __str__(self):  # pragma: no cover
-        return f'{self.type}/{self.server_url}'
+        return f'{self.scm_service_type}/{self.server_url}'
 
 
 class SCMRepository(AuditedModel):

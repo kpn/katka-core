@@ -67,7 +67,7 @@ class SCMServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SCMService
-        fields = ('public_identifier', 'type', 'server_url')
+        fields = ('public_identifier', 'scm_service_type', 'server_url')
 
 
 class SCMRepositorySerializer(serializers.ModelSerializer):

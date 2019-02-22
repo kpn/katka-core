@@ -172,7 +172,7 @@ def logged_in_user(client, user):
 
 @pytest.fixture
 def scm_service():
-    scm_service = models.SCMService(type='bitbucket', server_url='www.example.com')
+    scm_service = models.SCMService(scm_service_type='bitbucket', server_url='www.example.com')
     with username_on_model(models.SCMService, 'initial'):
         scm_service.save()
 
