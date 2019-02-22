@@ -74,7 +74,7 @@ def deactivated_project(team, project):
 
 
 @pytest.fixture
-def credential(team):
+def my_credential(team):
     credential = models.Credential(name='System user X', slug='SUX', team=team)
     with username_on_model(models.Credential, 'initial'):
         credential.save()
@@ -83,7 +83,40 @@ def credential(team):
 
 
 @pytest.fixture
-def secret(credential):
+def my_other_credential(team):
+    credential = models.Credential(name='System user other', slug='SUO', team=team)
+    with username_on_model(models.Credential, 'initial'):
+        credential.save()
+
+    return credential
+
+
+@pytest.fixture
+def not_my_credential(not_my_team):
+    credential = models.Credential(name='System user D', slug='SUD', team=not_my_team)
+    with username_on_model(models.Credential, 'initial'):
+        credential.save()
+
+    return credential
+
+
+@pytest.fixture
+def deactivated_credential(team):
+    credential = models.Credential(name='System user deactivated', slug='SUDA', team=team)
+    credential.deleted = True
+    with username_on_model(models.Credential, 'initial'):
+        credential.save()
+
+    return credential
+
+
+@pytest.fixture
+def credential(my_credential, my_other_credential, not_my_credential, deactivated_credential):
+    return my_credential
+
+
+@pytest.fixture
+def my_secret(credential):
     secret = models.CredentialSecret(key='access_token', value='full_access_value', credential=credential)
     with username_on_model(models.CredentialSecret, 'initial'):
         secret.save()
@@ -92,12 +125,36 @@ def secret(credential):
 
 
 @pytest.fixture
-def deactivated_secret(secret):
+def my_other_secret(my_other_credential):
+    secret = models.CredentialSecret(key='access_token', value='full_access_value', credential=my_other_credential)
+    with username_on_model(models.CredentialSecret, 'initial'):
+        secret.save()
+
+    return secret
+
+
+@pytest.fixture
+def not_my_secret(not_my_credential):
+    secret = models.CredentialSecret(key='access_token', value='full_access_value', credential=not_my_credential)
+    with username_on_model(models.CredentialSecret, 'initial'):
+        secret.save()
+
+    return secret
+
+
+@pytest.fixture
+def deactivated_secret(credential):
+    secret = models.CredentialSecret(key='username', value='full_access_value', credential=credential)
     secret.deleted = True
     with username_on_model(models.CredentialSecret, 'initial'):
         secret.save()
 
     return secret
+
+
+@pytest.fixture
+def secret(my_secret, my_other_secret, not_my_secret, deactivated_secret):
+    return my_secret
 
 
 @pytest.fixture
