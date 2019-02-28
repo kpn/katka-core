@@ -24,7 +24,7 @@ class ProjectAdmin(WithUsernameAdminModel):
 
 @admin.register(Application)
 class ApplicationAdmin(WithUsernameAdminModel):
-    fields = ('name', 'slug', 'project')
+    fields = ('name', 'slug', 'project', 'scm_repository')
 
 
 @admin.register(Credential)
