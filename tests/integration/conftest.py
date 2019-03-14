@@ -65,6 +65,15 @@ def project(team):
 
 
 @pytest.fixture
+def another_project(team):
+    project = models.Project(team=team, name='Project 2', slug='PRJ2')
+    with username_on_model(models.Project, 'initial'):
+        project.save()
+
+    return project
+
+
+@pytest.fixture
 def deactivated_project(team, project):
     project.deleted = True
     with username_on_model(models.Project, 'initial'):
@@ -199,6 +208,16 @@ def scm_repository(scm_service, credential):
 
 
 @pytest.fixture
+def another_scm_repository(scm_service, credential):
+    scm_repository = models.SCMRepository(scm_service=scm_service, credential=credential,
+                                          organisation='acme', repository_name='another')
+    with username_on_model(models.SCMRepository, 'initial'):
+        scm_repository.save()
+
+    return scm_repository
+
+
+@pytest.fixture
 def deactivated_scm_repository(scm_repository):
     scm_repository.deleted = True
     with username_on_model(models.SCMRepository, 'initial'):
@@ -210,6 +229,17 @@ def deactivated_scm_repository(scm_repository):
 @pytest.fixture
 def application(project, scm_repository):
     application = models.Application(project=project, scm_repository=scm_repository, name='Application D', slug='APPD')
+    with username_on_model(models.Application, 'initial'):
+        application.save()
+
+    return application
+
+
+@pytest.fixture
+def another_application(another_project, another_scm_repository):
+    application = models.Application(project=another_project,
+                                     scm_repository=another_scm_repository,
+                                     name='Application 2', slug='APP2')
     with username_on_model(models.Application, 'initial'):
         application.save()
 
