@@ -36,7 +36,11 @@ class ApplicationViewSet(AuditViewSet):
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
-        return super().get_queryset().filter(project__team__group__in=user_groups)
+        queryset = super().get_queryset().filter(project__team__group__in=user_groups)
+        project_id = self.request.query_params.get('project', None)
+        if project_id is not None:
+            queryset = queryset.filter(project=project_id)
+        return queryset
 
 
 class CredentialViewSet(AuditViewSet):
