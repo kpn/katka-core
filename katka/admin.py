@@ -29,7 +29,7 @@ class ApplicationAdmin(WithUsernameAdminModel):
 
 @admin.register(Credential)
 class CredentialAdmin(WithUsernameAdminModel):
-    fields = ('name', 'slug', 'credential_type', 'team')
+    fields = ('name', 'credential_type', 'team')
 
 
 @admin.register(CredentialSecret)

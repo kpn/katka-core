@@ -46,7 +46,7 @@ class TestCredentialViewSetUnauthenticated:
 
     def test_create(self, client, team):
         url = f'/credentials/'
-        data = {'name': 'System User Y', 'slug': 'SUY', 'team': team.public_identifier}
+        data = {'name': 'System User Y', 'team': team.public_identifier}
         response = client.post(url, data, content_type='application/json')
         assert response.status_code == 403
 
@@ -83,7 +83,7 @@ class TestCredentialViewSet:
 
     def test_update(self, client, logged_in_user, team, credential):
         url = f'/credentials/{credential.public_identifier}/'
-        data = {'name': 'System user Y', 'slug': 'SUY', 'team': team.public_identifier}
+        data = {'name': 'System user Y', 'team': team.public_identifier}
         response = client.put(url, data, content_type='application/json')
         assert response.status_code == 200
         p = models.Credential.objects.get(pk=credential.public_identifier)
@@ -91,7 +91,7 @@ class TestCredentialViewSet:
 
     def test_update_nonexistent_team(self, client, logged_in_user, team, credential):
         url = f'/credentials/{credential.public_identifier}/'
-        data = {'name': 'System User Y', 'slug': 'SUY', 'team': '00000000-0000-0000-0000-000000000000'}
+        data = {'name': 'System User Y', 'team': '00000000-0000-0000-0000-000000000000'}
         response = client.put(url, data, content_type='application/json')
         assert response.status_code == 403
 
@@ -106,7 +106,7 @@ class TestCredentialViewSet:
     def test_create(self, client, logged_in_user, team, credential):
         before_count = models.Credential.objects.count()
         url = f'/credentials/'
-        data = {'name': 'System User Y', 'slug': 'SUY', 'team': team.public_identifier}
+        data = {'name': 'System User Y', 'team': team.public_identifier}
         response = client.post(url, data=data, content_type='application/json')
         assert response.status_code == 201
         models.Credential.objects.get(name='System User Y')

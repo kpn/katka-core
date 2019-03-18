@@ -84,7 +84,7 @@ def deactivated_project(team, project):
 
 @pytest.fixture
 def my_credential(team):
-    credential = models.Credential(name='System user X', slug='SUX', team=team)
+    credential = models.Credential(name='System user X', team=team)
     with username_on_model(models.Credential, 'initial'):
         credential.save()
 
@@ -93,7 +93,7 @@ def my_credential(team):
 
 @pytest.fixture
 def my_other_credential(team):
-    credential = models.Credential(name='System user other', slug='SUO', team=team)
+    credential = models.Credential(name='System user other', team=team)
     with username_on_model(models.Credential, 'initial'):
         credential.save()
 
@@ -102,7 +102,7 @@ def my_other_credential(team):
 
 @pytest.fixture
 def not_my_credential(not_my_team):
-    credential = models.Credential(name='System user D', slug='SUD', team=not_my_team)
+    credential = models.Credential(name='System user D', team=not_my_team)
     with username_on_model(models.Credential, 'initial'):
         credential.save()
 
@@ -111,7 +111,7 @@ def not_my_credential(not_my_team):
 
 @pytest.fixture
 def deactivated_credential(team):
-    credential = models.Credential(name='System user deactivated', slug='SUDA', team=team)
+    credential = models.Credential(name='System user deactivated', team=team)
     credential.deleted = True
     with username_on_model(models.Credential, 'initial'):
         credential.save()
