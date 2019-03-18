@@ -133,7 +133,7 @@ class TestApplicationAdmin:
 class TestCredentialAdmin:
     def test_save_stores_username(self, mock_request, team):
         c = CredentialAdmin(Credential, AdminSite())
-        obj = Credential(name='Credential D', slug='CRED', team=team)
+        obj = Credential(name='Credential D', team=team)
         c.save_model(mock_request, obj, None, None)
 
         assert obj.created_username == 'mock1'

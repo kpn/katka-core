@@ -36,13 +36,9 @@ class Project(AuditedModel):
 
 class Credential(AuditedModel):
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    slug = KatkaSlugField()
     name = models.CharField(max_length=100)
     credential_type = models.CharField(max_length=50)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('team', 'slug')
 
     def __str__(self):  # pragma: no cover
         return f'{self.credential_type}/{self.name}'
