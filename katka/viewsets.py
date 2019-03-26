@@ -34,3 +34,24 @@ class AuditViewSet(mixins.CreateModelMixin,
             instance.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class FilterViewMixin:
+    """
+    Uses the Serializer fields to construct GET Parameter filtering
+    """
+    def get_queryset(self):
+        queryset = super(FilterViewMixin, self).get_queryset()
+
+        related_fields = self.serializer_class.get_related_fields()
+
+        filters = {}
+        for param in related_fields:
+            value = self.request.query_params.get(param, None)
+            if value is not None:
+                filters[param] = value
+
+        if filters:
+            queryset = queryset.filter(**filters)
+
+        return queryset

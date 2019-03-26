@@ -72,6 +72,29 @@ class TestSCMStepRunViewSet:
         assert UUID(parsed[0]['scm_pipeline_run']) == scm_pipeline_run.public_identifier
         UUID(parsed[0]['public_identifier'])  # should not raise
 
+    def test_filtered_list(self, client, logged_in_user, scm_pipeline_run, scm_step_run,
+                           another_scm_pipeline_run, another_scm_step_run):
+
+        response = client.get('/scm-step-runs/?scm_pipeline_run=' + str(another_scm_pipeline_run.public_identifier))
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]['slug'] == 'another-release'
+        assert parsed[0]['name'] == 'Another Release Katka'
+        assert parsed[0]['stage'] == 'Production'
+        assert parsed[0]['status'] == STEP_STATUS_INPROGRESS
+        assert parsed[0]['output'] == ''
+        assert UUID(parsed[0]['scm_pipeline_run']) == another_scm_pipeline_run.public_identifier
+        UUID(parsed[0]['public_identifier'])  # should not raise
+
+    def test_filtered_list_non_existing_pipeline_run(self, client, logged_in_user, scm_pipeline_run, scm_step_run,
+                                                     another_scm_pipeline_run, another_scm_step_run):
+
+        response = client.get('/scm-step-runs/?scm_pipeline_run=12345678-1234-5678-1234-567812345678')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 0
+
     def test_list_excludes_inactive(self, client, logged_in_user, deactivated_scm_step_run):
         response = client.get('/scm-step-runs/')
         assert response.status_code == 200

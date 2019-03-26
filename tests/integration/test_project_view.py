@@ -57,6 +57,26 @@ class TestProjectViewSet:
         parsed_team = parsed[0]['team']
         assert UUID(parsed_team) == team.public_identifier
 
+    def test_filtered_list(self, client, logged_in_user, team, project,
+                           my_other_team, another_project):
+
+        response = client.get('/projects/?team=' + str(my_other_team.public_identifier))
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]['name'] == 'Project 2'
+        assert parsed[0]['slug'] == 'PRJ2'
+        parsed_team = parsed[0]['team']
+        assert UUID(parsed_team) == my_other_team.public_identifier
+
+    def test_filtered_list_non_existing_team(self, client, logged_in_user, team, project,
+                                             my_other_team, another_project):
+
+        response = client.get('/applications/?project=12345678-1234-5678-1234-567812345678')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 0
+
     def test_list_excludes_inactive(self, client, logged_in_user, team, deactivated_project):
         response = client.get('/projects/')
         assert response.status_code == 200

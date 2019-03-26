@@ -64,6 +64,36 @@ class TestSCMRepositoryViewSet:
         assert UUID(parsed[0]['scm_service']) == scm_service.public_identifier
         UUID(parsed[0]['public_identifier'])  # should not raise
 
+    def test_filtered_list(self, client, logged_in_user, credential, scm_service, scm_repository,
+                           my_other_teams_credential, another_scm_service, another_scm_repository):
+
+        response = client.get(f'/scm-repositories/?credential={str(my_other_teams_credential.public_identifier)}'
+                              f'&scm_service={str(another_scm_service.public_identifier)}')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]['organisation'] == 'acme'
+        assert parsed[0]['repository_name'] == 'another'
+        assert UUID(parsed[0]['credential']) == my_other_teams_credential.public_identifier
+        assert UUID(parsed[0]['scm_service']) == another_scm_service.public_identifier
+        assert UUID(parsed[0]['public_identifier']) == another_scm_repository.public_identifier
+
+    def test_filtered_list_non_existing_credential(self, client, logged_in_user, application, scm_pipeline_run,
+                                                   another_application, another_scm_pipeline_run):
+
+        response = client.get('/scm-repositories/?credential=12345678-1234-5678-1234-567812345678')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 0
+
+    def test_filtered_list_non_existing_scm_service(self, client, logged_in_user, application, scm_pipeline_run,
+                                                    another_application, another_scm_pipeline_run):
+
+        response = client.get('/scm-repositories/?scm_service=12345678-1234-5678-1234-567812345678')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 0
+
     def test_list_excludes_inactive(self, client, logged_in_user, deactivated_scm_repository):
         response = client.get('/scm-repositories/')
         assert response.status_code == 200

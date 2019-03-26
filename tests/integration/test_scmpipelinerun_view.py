@@ -66,6 +66,25 @@ class TestSCMPipelineRunViewSet:
         assert UUID(parsed[0]['application']) == application.public_identifier
         UUID(parsed[0]['public_identifier'])  # should not raise
 
+    def test_filtered_list(self, client, logged_in_user, application, scm_pipeline_run,
+                           another_application, another_scm_pipeline_run):
+
+        response = client.get('/scm-pipeline-runs/?application=' + str(another_application.public_identifier))
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]['commit_hash'] == '1234567A143AEC5156FD1444A017A3213654321'
+        assert UUID(parsed[0]['application']) == another_application.public_identifier
+        assert UUID(parsed[0]['public_identifier']) == another_scm_pipeline_run.public_identifier
+
+    def test_filtered_list_non_existing_application(self, client, logged_in_user, application, scm_pipeline_run,
+                                                    another_application, another_scm_pipeline_run):
+
+        response = client.get('/scm-pipeline-runs/?application=12345678-1234-5678-1234-567812345678')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 0
+
     def test_list_excludes_inactive(self, client, logged_in_user, deactivated_scm_pipeline_run):
         response = client.get('/scm-pipeline-runs/')
         assert response.status_code == 200
