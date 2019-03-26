@@ -57,11 +57,31 @@ class TestCredentialViewSet:
         response = client.get(f'/credentials/')
         assert response.status_code == 200
         parsed = response.json()
-        assert len(parsed) == 2
+        assert len(parsed) == 3
         assert UUID(parsed[0]['public_identifier']) == credential.public_identifier
         assert parsed[0]['name'] == 'System user X'
         parsed_team = parsed[0]['team']
         assert UUID(parsed_team) == team.public_identifier
+
+    def test_filtered_list(self, client, logged_in_user, team, credential,
+                           my_other_team, my_other_teams_credential):
+
+        response = client.get('/credentials/?team=' + str(my_other_team.public_identifier))
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert UUID(parsed[0]['public_identifier']) == my_other_teams_credential.public_identifier
+        assert parsed[0]['name'] == 'System user my other team'
+        parsed_team = parsed[0]['team']
+        assert UUID(parsed_team) == my_other_team.public_identifier
+
+    def test_filtered_list_non_existing_team(self, client, logged_in_user, team, credential,
+                                             my_other_team, my_other_teams_credential):
+
+        response = client.get('/credentials/?team=12345678-1234-5678-1234-567812345678')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 0
 
     def test_get(self, client, logged_in_user, team, credential):
         response = client.get(f'/credentials/{credential.public_identifier}/')

@@ -11,7 +11,17 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
 
-class TeamSerializer(serializers.ModelSerializer):
+class KatkaSerializer(serializers.ModelSerializer):
+    @classmethod
+    def get_related_fields(cls):
+        """
+        Gets the fields that are declared in the Class declaration
+        These are the related fields (e.g. project for an application)
+        """
+        return cls._get_declared_fields([cls], {})
+
+
+class TeamSerializer(KatkaSerializer):
     group = GroupNameField(queryset=Group.objects.all())
 
     class Meta:
@@ -25,7 +35,7 @@ class TeamSerializer(serializers.ModelSerializer):
         return group
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectSerializer(KatkaSerializer):
     team = TeamRelatedField()
 
     class Meta:
@@ -33,7 +43,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ('public_identifier', 'slug', 'name', 'team')
 
 
-class ApplicationSerializer(serializers.ModelSerializer):
+class ApplicationSerializer(KatkaSerializer):
     project = ProjectRelatedField()
     scm_repository = SCMRepositoryRelatedField()
 
@@ -42,7 +52,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         fields = ('public_identifier', 'slug', 'name', 'project', 'scm_repository')
 
 
-class CredentialSerializer(serializers.ModelSerializer):
+class CredentialSerializer(KatkaSerializer):
     team = TeamRelatedField()
 
     class Meta:
@@ -70,7 +80,7 @@ class SCMServiceSerializer(serializers.ModelSerializer):
         fields = ('public_identifier', 'scm_service_type', 'server_url')
 
 
-class SCMRepositorySerializer(serializers.ModelSerializer):
+class SCMRepositorySerializer(KatkaSerializer):
     credential = CredentialRelatedField()
     scm_service = SCMServiceRelatedField()
 
@@ -79,7 +89,7 @@ class SCMRepositorySerializer(serializers.ModelSerializer):
         fields = ('public_identifier', 'organisation', 'repository_name', 'credential', 'scm_service')
 
 
-class SCMPipelineRunSerializer(serializers.ModelSerializer):
+class SCMPipelineRunSerializer(KatkaSerializer):
     application = ApplicationRelatedField()
 
     class Meta:
@@ -88,7 +98,7 @@ class SCMPipelineRunSerializer(serializers.ModelSerializer):
                   'application')
 
 
-class SCMStepRunSerializer(serializers.ModelSerializer):
+class SCMStepRunSerializer(KatkaSerializer):
     scm_pipeline_run = SCMPipelineRunRelatedField()
 
     class Meta:

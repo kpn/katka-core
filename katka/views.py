@@ -5,11 +5,11 @@ from katka.serializers import (
     ApplicationSerializer, CredentialSecretSerializer, CredentialSerializer, ProjectSerializer,
     SCMPipelineRunSerializer, SCMRepositorySerializer, SCMServiceSerializer, SCMStepRunSerializer, TeamSerializer,
 )
-from katka.viewsets import AuditViewSet, ReadOnlyAuditViewMixin
+from katka.viewsets import AuditViewSet, FilterViewMixin, ReadOnlyAuditViewMixin
 from rest_framework.permissions import IsAuthenticated
 
 
-class TeamViewSet(AuditViewSet):
+class TeamViewSet(FilterViewMixin, AuditViewSet):
     model = Team
     serializer_class = TeamSerializer
     lookup_field = 'public_identifier'
@@ -21,7 +21,7 @@ class TeamViewSet(AuditViewSet):
         return super().get_queryset().filter(group__in=user_groups)
 
 
-class ProjectViewSet(AuditViewSet):
+class ProjectViewSet(FilterViewMixin, AuditViewSet):
     model = Project
     serializer_class = ProjectSerializer
 
@@ -30,20 +30,16 @@ class ProjectViewSet(AuditViewSet):
         return super().get_queryset().filter(team__group__in=user_groups)
 
 
-class ApplicationViewSet(AuditViewSet):
+class ApplicationViewSet(FilterViewMixin, AuditViewSet):
     model = Application
     serializer_class = ApplicationSerializer
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
-        queryset = super().get_queryset().filter(project__team__group__in=user_groups)
-        project_id = self.request.query_params.get('project', None)
-        if project_id is not None:
-            queryset = queryset.filter(project=project_id)
-        return queryset
+        return super().get_queryset().filter(project__team__group__in=user_groups)
 
 
-class CredentialViewSet(AuditViewSet):
+class CredentialViewSet(FilterViewMixin, AuditViewSet):
     model = Credential
     serializer_class = CredentialSerializer
 
@@ -73,7 +69,7 @@ class SCMServiceViewSet(ReadOnlyAuditViewMixin):
     permission_classes = [IsAuthenticated]
 
 
-class SCMRepositoryViewSet(AuditViewSet):
+class SCMRepositoryViewSet(FilterViewMixin, AuditViewSet):
     model = SCMRepository
     serializer_class = SCMRepositorySerializer
 
@@ -82,7 +78,7 @@ class SCMRepositoryViewSet(AuditViewSet):
         return super().get_queryset().filter(credential__team__group__in=user_groups)
 
 
-class SCMPipelineRunViewSet(AuditViewSet):
+class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
     model = SCMPipelineRun
     serializer_class = SCMPipelineRunSerializer
 
@@ -91,7 +87,7 @@ class SCMPipelineRunViewSet(AuditViewSet):
         return super().get_queryset().filter(application__project__team__group__in=user_groups)
 
 
-class SCMStepRunViewSet(AuditViewSet):
+class SCMStepRunViewSet(FilterViewMixin, AuditViewSet):
     model = SCMStepRun
     serializer_class = SCMStepRunSerializer
 

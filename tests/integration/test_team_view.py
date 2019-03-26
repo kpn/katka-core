@@ -55,6 +55,24 @@ class TestTeamViewSet:
         assert parsed[0]['group'] == 'group1'
         UUID(parsed[0]['public_identifier'])  # should not raise
 
+    def test_filtered_list(self, client, logged_in_user, my_team, group, my_other_team, my_other_group):
+        """Note: Can only filter teams that logged_in_user belongs to"""
+        # TODO: Filter on group name rather than id
+        response = client.get('/teams/?group=' + str(my_other_group.id))
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]['name'] == 'B-Team'
+        assert parsed[0]['group'] == 'my_other_group'
+        UUID(parsed[0]['public_identifier'])  # should not raise
+
+    def test_filtered_list_non_existing_group(self, client, logged_in_user, team, my_other_team):
+
+        response = client.get('/teams/?group=1289572137892789')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 0
+
     def test_list_excludes_inactive(self, client, logged_in_user, deactivated_team):
         response = client.get('/teams/')
         assert response.status_code == 200

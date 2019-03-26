@@ -14,6 +14,13 @@ def group():
 
 
 @pytest.fixture
+def my_other_group():
+    group = Group(name='my_other_group')
+    group.save()
+    return group
+
+
+@pytest.fixture
 def not_my_group():
     group = Group(name='not_my_group')
     group.save()
@@ -47,6 +54,16 @@ def team(my_team, not_my_team):
 
 
 @pytest.fixture
+def my_other_team(my_other_group):
+    a_team = models.Team(name='B-Team', slug='BTM', group=my_other_group)
+
+    with username_on_model(models.Team, 'initial'):
+        a_team.save()
+
+    return a_team
+
+
+@pytest.fixture
 def deactivated_team(team):
     team.deleted = True
     with username_on_model(models.Team, 'deactivator'):
@@ -65,8 +82,8 @@ def project(team):
 
 
 @pytest.fixture
-def another_project(team):
-    project = models.Project(team=team, name='Project 2', slug='PRJ2')
+def another_project(my_other_team):
+    project = models.Project(team=my_other_team, name='Project 2', slug='PRJ2')
     with username_on_model(models.Project, 'initial'):
         project.save()
 
@@ -101,6 +118,15 @@ def my_other_credential(team):
 
 
 @pytest.fixture
+def my_other_teams_credential(my_other_team):
+    credential = models.Credential(name='System user my other team', team=my_other_team)
+    with username_on_model(models.Credential, 'initial'):
+        credential.save()
+
+    return credential
+
+
+@pytest.fixture
 def not_my_credential(not_my_team):
     credential = models.Credential(name='System user D', team=not_my_team)
     with username_on_model(models.Credential, 'initial'):
@@ -120,7 +146,8 @@ def deactivated_credential(team):
 
 
 @pytest.fixture
-def credential(my_credential, my_other_credential, not_my_credential, deactivated_credential):
+def credential(my_credential, my_other_credential, my_other_teams_credential,
+               not_my_credential, deactivated_credential):
     return my_credential
 
 
@@ -167,9 +194,10 @@ def secret(my_secret, my_other_secret, not_my_secret, deactivated_secret):
 
 
 @pytest.fixture
-def user(group):
+def user(group, my_other_group):
     u = User.objects.create_user('test_user', None, None)
     u.groups.add(group)
+    u.groups.add(my_other_group)
     return u
 
 
@@ -182,6 +210,15 @@ def logged_in_user(client, user):
 @pytest.fixture
 def scm_service():
     scm_service = models.SCMService(scm_service_type='bitbucket', server_url='www.example.com')
+    with username_on_model(models.SCMService, 'initial'):
+        scm_service.save()
+
+    return scm_service
+
+
+@pytest.fixture
+def another_scm_service():
+    scm_service = models.SCMService(scm_service_type='bitbucket', server_url='www.bitbucket.com')
     with username_on_model(models.SCMService, 'initial'):
         scm_service.save()
 
@@ -208,8 +245,8 @@ def scm_repository(scm_service, credential):
 
 
 @pytest.fixture
-def another_scm_repository(scm_service, credential):
-    scm_repository = models.SCMRepository(scm_service=scm_service, credential=credential,
+def another_scm_repository(another_scm_service, my_other_teams_credential):
+    scm_repository = models.SCMRepository(scm_service=another_scm_service, credential=my_other_teams_credential,
                                           organisation='acme', repository_name='another')
     with username_on_model(models.SCMRepository, 'initial'):
         scm_repository.save()
@@ -275,6 +312,25 @@ do-release:
 
 
 @pytest.fixture
+def another_scm_pipeline_run(another_application):
+    pipeline_yaml = '''stages:
+  - release
+
+do-release:
+  stage: release
+'''
+    scm_pipeline_run = models.SCMPipelineRun(application=another_application,
+                                             pipeline_yaml=pipeline_yaml,
+                                             status=PIPELINE_STATUS_INPROGRESS,
+                                             steps_total=5,
+                                             commit_hash='1234567A143AEC5156FD1444A017A3213654321')
+    with username_on_model(models.SCMPipelineRun, 'initial'):
+        scm_pipeline_run.save()
+
+    return scm_pipeline_run
+
+
+@pytest.fixture
 def deactivated_scm_pipeline_run(scm_pipeline_run):
     scm_pipeline_run.deleted = True
     with username_on_model(models.SCMPipelineRun, 'initial'):
@@ -288,6 +344,18 @@ def scm_step_run(scm_pipeline_run):
     scm_step_run = models.SCMStepRun(slug='release', name='Release Katka', stage='Production',
                                      status=STEP_STATUS_INPROGRESS,
                                      scm_pipeline_run=scm_pipeline_run)
+
+    with username_on_model(models.SCMStepRun, 'initial'):
+        scm_step_run.save()
+
+    return scm_step_run
+
+
+@pytest.fixture
+def another_scm_step_run(another_scm_pipeline_run):
+    scm_step_run = models.SCMStepRun(slug='another-release', name='Another Release Katka', stage='Production',
+                                     status=STEP_STATUS_INPROGRESS,
+                                     scm_pipeline_run=another_scm_pipeline_run)
 
     with username_on_model(models.SCMStepRun, 'initial'):
         scm_step_run.save()
