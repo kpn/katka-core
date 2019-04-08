@@ -1,7 +1,8 @@
 from django.contrib.auth.models import Group
 
 from katka.models import (
-    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRepository, SCMService, SCMStepRun, Team,
+    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRelease, SCMRepository, SCMService,
+    SCMStepRun, Team,
 )
 from katka.serializer_fields import (
     ApplicationRelatedField, CredentialRelatedField, GroupNameField, ProjectRelatedField, SCMPipelineRunRelatedField,
@@ -104,3 +105,24 @@ class SCMStepRunSerializer(KatkaSerializer):
     class Meta:
         model = SCMStepRun
         fields = ('public_identifier', 'slug', 'name', 'stage', 'status', 'output', 'scm_pipeline_run')
+
+
+class SCMReleaseSerializer(KatkaSerializer):
+    scm_pipeline_run = SCMPipelineRunRelatedField(required=False, read_only=True)
+
+    released = serializers.DateTimeField(required=False)
+
+    class Meta:
+        model = SCMRelease
+        fields = ('public_identifier', 'name', 'released', 'from_hash', 'to_hash', 'scm_pipeline_run')
+        read_only_fields = ('from_hash', 'to_hash', 'scm_pipeline_run')
+
+
+class SCMReleaseCreateSerializer(KatkaSerializer):
+    scm_pipeline_run = SCMPipelineRunRelatedField(required=False)
+
+    released = serializers.DateTimeField(required=False)
+
+    class Meta:
+        model = SCMRelease
+        fields = ('public_identifier', 'name', 'released', 'from_hash', 'to_hash', 'scm_pipeline_run')
