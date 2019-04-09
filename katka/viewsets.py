@@ -41,7 +41,7 @@ class FilterViewMixin:
     Uses the Serializer fields to construct GET Parameter filtering
     """
     def get_queryset(self):
-        queryset = super(FilterViewMixin, self).get_queryset()
+        queryset = super().get_queryset()
 
         related_fields = self.serializer_class.get_related_fields()
 

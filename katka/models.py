@@ -111,3 +111,14 @@ class SCMStepRun(AuditedModel):
     status = models.CharField(max_length=30, choices=STEP_STATUS_CHOICES, default=STEP_STATUS_INPROGRESS)
     output = models.TextField(blank=True)
     scm_pipeline_run = models.ForeignKey(SCMPipelineRun, on_delete=models.PROTECT)
+
+
+# SCM Releases, comprises a range of commits that are released
+class SCMRelease(AuditedModel):
+    public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    released = models.DateTimeField(null=True)
+    from_hash = models.CharField(max_length=64)
+    to_hash = models.CharField(max_length=64)
+    # points to the pipeline run that created the release, and contains the information on the deployment pipeline
+    scm_pipeline_run = models.ForeignKey(SCMPipelineRun, on_delete=models.PROTECT)
