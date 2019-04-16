@@ -2,7 +2,6 @@ from uuid import UUID
 
 import pytest
 from katka import models
-from katka.constants import STEP_STATUS_INPROGRESS, STEP_STATUS_SUCCESS
 
 
 @pytest.mark.django_db
@@ -33,7 +32,7 @@ class TestSCMStepRunViewSetUnauthenticated:
         data = {'slug': 'release',
                 'name': 'Release product',
                 'stage': 'Production',
-                'status': STEP_STATUS_SUCCESS,
+                'status': 'success',
                 'output': 'Command completed',
                 'scm_pipeline_run': scm_pipeline_run.public_identifier}
         response = client.put(url, data, content_type='application/json')
@@ -50,7 +49,7 @@ class TestSCMStepRunViewSetUnauthenticated:
         data = {'slug': 'release',
                 'name': 'Release product',
                 'stage': 'Production',
-                'status': STEP_STATUS_INPROGRESS,
+                'status': 'in progress',
                 'scm_pipeline_run': scm_pipeline_run.public_identifier}
         response = client.post(url, data=data, content_type='application/json')
         assert response.status_code == 403
@@ -67,7 +66,7 @@ class TestSCMStepRunViewSet:
         assert parsed[0]['slug'] == 'release'
         assert parsed[0]['name'] == 'Release Katka'
         assert parsed[0]['stage'] == 'Production'
-        assert parsed[0]['status'] == STEP_STATUS_INPROGRESS
+        assert parsed[0]['status'] == 'not started'
         assert parsed[0]['output'] == ''
         assert UUID(parsed[0]['scm_pipeline_run']) == scm_pipeline_run.public_identifier
         UUID(parsed[0]['public_identifier'])  # should not raise
@@ -82,7 +81,7 @@ class TestSCMStepRunViewSet:
         assert parsed[0]['slug'] == 'another-release'
         assert parsed[0]['name'] == 'Another Release Katka'
         assert parsed[0]['stage'] == 'Production'
-        assert parsed[0]['status'] == STEP_STATUS_INPROGRESS
+        assert parsed[0]['status'] == 'not started'
         assert parsed[0]['output'] == ''
         assert UUID(parsed[0]['scm_pipeline_run']) == another_scm_pipeline_run.public_identifier
         UUID(parsed[0]['public_identifier'])  # should not raise
@@ -108,7 +107,7 @@ class TestSCMStepRunViewSet:
         assert parsed['slug'] == 'release'
         assert parsed['name'] == 'Release Katka'
         assert parsed['stage'] == 'Production'
-        assert parsed['status'] == STEP_STATUS_INPROGRESS
+        assert parsed['status'] == 'not started'
         assert parsed['output'] == ''
         assert UUID(parsed['scm_pipeline_run']) == scm_pipeline_run.public_identifier
         UUID(parsed['public_identifier'])  # should not raise
@@ -128,7 +127,7 @@ class TestSCMStepRunViewSet:
         data = {'slug': 'release',
                 'name': 'Release product',
                 'stage': 'Production',
-                'status': STEP_STATUS_SUCCESS,
+                'status': 'success',
                 'output': 'Command completed',
                 'scm_pipeline_run': scm_pipeline_run.public_identifier}
         response = client.put(url, data, content_type='application/json')
@@ -150,7 +149,7 @@ class TestSCMStepRunViewSet:
         data = {'slug': 'release',
                 'name': 'Release product',
                 'stage': 'Production',
-                'status': STEP_STATUS_INPROGRESS,
+                'status': 'not started',
                 'scm_pipeline_run': scm_pipeline_run.public_identifier}
         response = client.post(url, data=data, content_type='application/json')
         assert response.status_code == 201

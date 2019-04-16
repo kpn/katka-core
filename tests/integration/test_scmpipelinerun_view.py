@@ -2,7 +2,6 @@ from uuid import UUID
 
 import pytest
 from katka import models
-from katka.constants import PIPELINE_STATUS_INPROGRESS, PIPELINE_STATUS_SUCCESS
 
 
 @pytest.mark.django_db
@@ -31,7 +30,7 @@ class TestSCMPipelineRunViewSetUnauthenticated:
     def test_update(self, client, application, scm_pipeline_run):
         url = f'/scm-pipeline-runs/{scm_pipeline_run.public_identifier}/'
         data = {'commit_hash': '0a032e92f77797d9be0ea3ad6c595392313ded72',
-                'status': PIPELINE_STATUS_SUCCESS,
+                'status': 'success',
                 'steps_total': 10,
                 'steps_completed': 5,
                 'application': application.public_identifier}
@@ -47,7 +46,7 @@ class TestSCMPipelineRunViewSetUnauthenticated:
     def test_create(self, client, application, scm_pipeline_run):
         url = f'/scm-pipeline-runs/'
         data = {'commit_hash': '4015B57A143AEC5156FD1444A017A32137A3FD0F',
-                'status': PIPELINE_STATUS_INPROGRESS,
+                'status': 'in progress',
                 'steps_total': 10,
                 'application': application.public_identifier}
         response = client.post(url, data=data, content_type='application/json')
@@ -118,7 +117,7 @@ do-release:
   stage: release
 '''
         data = {'commit_hash': '0a032e92f77797d9be0ea3ad6c595392313ded72',
-                'status': PIPELINE_STATUS_SUCCESS,
+                'status': 'success',
                 'steps_total': 10,
                 'steps_completed': 5,
                 'pipeline_yaml': pipeline_yaml,
@@ -146,7 +145,7 @@ do-release:
   stage: release
 '''
         data = {'commit_hash': '4015B57A143AEC5156FD1444A017A32137A3FD0F',
-                'status': PIPELINE_STATUS_INPROGRESS,
+                'status': 'in progress',
                 'steps_total': 10,
                 'pipeline_yaml': pipeline_yaml,
                 'application': application.public_identifier}
