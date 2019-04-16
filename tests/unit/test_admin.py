@@ -7,7 +7,6 @@ from katka.admin import (
     ApplicationAdmin, CredentialAdmin, CredentialSecretAdmin, ProjectAdmin, SCMPipelineRunAdmin, SCMRepositoryAdmin,
     SCMServiceAdmin, SCMStepRunAdmin, TeamAdmin,
 )
-from katka.constants import PIPELINE_STATUS_INPROGRESS, STEP_STATUS_INPROGRESS
 from katka.fields import username_on_model
 from katka.models import (
     Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRepository, SCMService, SCMStepRun, Team,
@@ -88,7 +87,7 @@ def scm_pipeline_run(application):
     '''
     scm_pipeline_run = SCMPipelineRun(application=application,
                                       pipeline_yaml=pipeline_yaml,
-                                      status=PIPELINE_STATUS_INPROGRESS,
+                                      status='in progress',
                                       steps_total=5,
                                       commit_hash='4015B57A143AEC5156FD1444A017A32137A3FD0F')
     with username_on_model(SCMPipelineRun, 'audit_user'):
@@ -179,7 +178,7 @@ class TestSCMPipelineRunAdmin:
     def test_save_stores_username(self, mock_request, application):
         c = SCMPipelineRunAdmin(SCMPipelineRun, AdminSite())
         obj = SCMPipelineRun(commit_hash='4015B57A143AEC5156FD1444A017A32137A3FD0F',
-                             status=PIPELINE_STATUS_INPROGRESS,
+                             status='in progress',
                              steps_total=5,
                              application=application)
         c.save_model(mock_request, obj, None, None)
@@ -193,7 +192,7 @@ class TestSCMStepRunAdmin:
     def test_save_stores_username(self, mock_request, scm_pipeline_run):
         c = SCMStepRunAdmin(SCMStepRun, AdminSite())
         obj = SCMStepRun(slug='release', name='Release Katka', stage='Production',
-                         status=STEP_STATUS_INPROGRESS,
+                         status='in progress',
                          scm_pipeline_run=scm_pipeline_run)
         c.save_model(mock_request, obj, None, None)
 

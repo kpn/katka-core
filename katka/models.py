@@ -6,7 +6,7 @@ from django.db import models
 from encrypted_model_fields.fields import EncryptedCharField
 from katka.auditedmodel import AuditedModel
 from katka.constants import (
-    PIPELINE_STATUS_CHOICES, PIPELINE_STATUS_INPROGRESS, STEP_STATUS_CHOICES, STEP_STATUS_INPROGRESS,
+    PIPELINE_STATUS_CHOICES, PIPELINE_STATUS_INITIALIZING, STEP_STATUS_CHOICES, STEP_STATUS_NOT_STARTED,
 )
 from katka.fields import KatkaSlugField
 
@@ -96,7 +96,7 @@ class Application(AuditedModel):
 class SCMPipelineRun(AuditedModel):
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     commit_hash = models.CharField(max_length=64)  # A SHA-1 hash is 40 characters, SHA-256 is 64 characters
-    status = models.CharField(max_length=30, choices=PIPELINE_STATUS_CHOICES, default=PIPELINE_STATUS_INPROGRESS)
+    status = models.CharField(max_length=30, choices=PIPELINE_STATUS_CHOICES, default=PIPELINE_STATUS_INITIALIZING)
     steps_total = models.PositiveSmallIntegerField()
     steps_completed = models.PositiveSmallIntegerField(default=0)
     pipeline_yaml = models.TextField()
@@ -108,7 +108,7 @@ class SCMStepRun(AuditedModel):
     slug = KatkaSlugField(max_length=30)
     name = models.CharField(max_length=100)
     stage = models.CharField(max_length=100)
-    status = models.CharField(max_length=30, choices=STEP_STATUS_CHOICES, default=STEP_STATUS_INPROGRESS)
+    status = models.CharField(max_length=30, choices=STEP_STATUS_CHOICES, default=STEP_STATUS_NOT_STARTED)
     output = models.TextField(blank=True)
     scm_pipeline_run = models.ForeignKey(SCMPipelineRun, on_delete=models.PROTECT)
 

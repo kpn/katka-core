@@ -2,7 +2,6 @@ from django.contrib.auth.models import Group, User
 
 import pytest
 from katka import models
-from katka.constants import PIPELINE_STATUS_INPROGRESS, STEP_STATUS_INPROGRESS
 from katka.fields import username_on_model
 
 
@@ -302,7 +301,6 @@ do-release:
 '''
     scm_pipeline_run = models.SCMPipelineRun(application=application,
                                              pipeline_yaml=pipeline_yaml,
-                                             status=PIPELINE_STATUS_INPROGRESS,
                                              steps_total=5,
                                              commit_hash='4015B57A143AEC5156FD1444A017A32137A3FD0F')
     with username_on_model(models.SCMPipelineRun, 'initial'):
@@ -321,7 +319,6 @@ do-release:
 '''
     scm_pipeline_run = models.SCMPipelineRun(application=another_application,
                                              pipeline_yaml=pipeline_yaml,
-                                             status=PIPELINE_STATUS_INPROGRESS,
                                              steps_total=5,
                                              commit_hash='1234567A143AEC5156FD1444A017A3213654321')
     with username_on_model(models.SCMPipelineRun, 'initial'):
@@ -342,7 +339,6 @@ def deactivated_scm_pipeline_run(scm_pipeline_run):
 @pytest.fixture
 def scm_step_run(scm_pipeline_run):
     scm_step_run = models.SCMStepRun(slug='release', name='Release Katka', stage='Production',
-                                     status=STEP_STATUS_INPROGRESS,
                                      scm_pipeline_run=scm_pipeline_run)
 
     with username_on_model(models.SCMStepRun, 'initial'):
@@ -354,7 +350,6 @@ def scm_step_run(scm_pipeline_run):
 @pytest.fixture
 def another_scm_step_run(another_scm_pipeline_run):
     scm_step_run = models.SCMStepRun(slug='another-release', name='Another Release Katka', stage='Production',
-                                     status=STEP_STATUS_INPROGRESS,
                                      scm_pipeline_run=another_scm_pipeline_run)
 
     with username_on_model(models.SCMStepRun, 'initial'):
