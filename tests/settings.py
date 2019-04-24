@@ -1,4 +1,6 @@
 # -*- coding: utf-8
+from .utils import session
+
 DEBUG = True
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -24,7 +26,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
 
-    'katka',
+    'katka.apps.KatkaCoreConfig',
 
     'tests.unit',
 
@@ -51,3 +53,6 @@ TEMPLATES = (
 )
 
 REQUESTS_CA_BUNDLE = '/etc/ssl/certs/ca-certificates.crt'
+
+PIPELINE_CHANGE_NOTIFICATION_SESSION = session.Session()
+PIPELINE_CHANGE_NOTIFICATION_URL = None
