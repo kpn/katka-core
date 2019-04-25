@@ -36,4 +36,6 @@ def send_pipeline_change_notification(sender, **kwargs):
         return
 
     session = settings.PIPELINE_CHANGE_NOTIFICATION_SESSION
-    session.post(settings.PIPELINE_CHANGE_NOTIFICATION_URL, json={'public_identifier': pipeline.public_identifier})
+    session.post(
+        settings.PIPELINE_CHANGE_NOTIFICATION_URL, json={'public_identifier': str(pipeline.public_identifier)}
+    )

@@ -51,8 +51,8 @@ class TestSCMPipelineRunSignals:
             # - the step status changed from non-final ("not started") to non-final ("in progress") so the
             #   number of completed steps in the pipeline did not change
             assert session.post.call_args_list == [
-                mock.call('http://override-url/', json={'public_identifier': scm_pipeline_run.public_identifier}),
-                mock.call('http://override-url/', json={'public_identifier': scm_pipeline_run.public_identifier}),
+                mock.call('http://override-url/', json={'public_identifier': str(scm_pipeline_run.public_identifier)}),
+                mock.call('http://override-url/', json={'public_identifier': str(scm_pipeline_run.public_identifier)}),
             ]
 
     def test_initializing(self, scm_step_run, scm_pipeline_run):
