@@ -1,8 +1,8 @@
 from django.contrib.auth.models import Group
 
 from katka.models import (
-    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRelease, SCMRepository, SCMService,
-    SCMStepRun, Team,
+    Application, ApplicationMetadata, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRelease, SCMRepository,
+    SCMService, SCMStepRun, Team,
 )
 from katka.serializer_fields import (
     ApplicationRelatedField, CredentialRelatedField, GroupNameField, ProjectRelatedField, SCMPipelineRunRelatedField,
@@ -126,3 +126,16 @@ class SCMReleaseCreateSerializer(KatkaSerializer):
     class Meta:
         model = SCMRelease
         fields = ('public_identifier', 'name', 'released', 'from_hash', 'to_hash', 'scm_pipeline_run')
+
+
+class ApplicationMetadataSerializer(serializers.ModelSerializer):
+    application = ApplicationRelatedField()
+
+    class Meta:
+        model = ApplicationMetadata
+        fields = ('key', 'value', 'application')
+
+    def to_internal_value(self, data):
+        """Automatically add application pk based on url kwargs"""
+        data['application'] = self.context['view'].kwargs['applications_pk']
+        return super().to_internal_value(data)

@@ -122,3 +122,15 @@ class SCMRelease(AuditedModel):
     to_hash = models.CharField(max_length=64)
     # points to the pipeline run that created the release, and contains the information on the deployment pipeline
     scm_pipeline_run = models.ForeignKey(SCMPipelineRun, on_delete=models.PROTECT)
+
+
+class ApplicationMetadata(AuditedModel):
+    key = models.CharField(max_length=50)
+    value = models.CharField(max_length=200)
+    application = models.ForeignKey(Application, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('application', 'key')
+
+    def __str__(self):  # pragma: no cover
+        return f'{self.application.name}/{self.key}'
