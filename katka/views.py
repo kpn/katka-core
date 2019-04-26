@@ -1,11 +1,11 @@
 from katka.models import (
-    Application, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRelease, SCMRepository, SCMService,
-    SCMStepRun, Team,
+    Application, ApplicationMetadata, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRelease, SCMRepository,
+    SCMService, SCMStepRun, Team,
 )
 from katka.serializers import (
-    ApplicationSerializer, CredentialSecretSerializer, CredentialSerializer, ProjectSerializer,
-    SCMPipelineRunSerializer, SCMReleaseCreateSerializer, SCMReleaseSerializer, SCMRepositorySerializer,
-    SCMServiceSerializer, SCMStepRunSerializer, TeamSerializer,
+    ApplicationMetadataSerializer, ApplicationSerializer, CredentialSecretSerializer, CredentialSerializer,
+    ProjectSerializer, SCMPipelineRunSerializer, SCMReleaseCreateSerializer, SCMReleaseSerializer,
+    SCMRepositorySerializer, SCMServiceSerializer, SCMStepRunSerializer, TeamSerializer,
 )
 from katka.viewsets import AuditViewSet, FilterViewMixin, ReadOnlyAuditViewMixin
 from rest_framework.permissions import IsAuthenticated
@@ -111,3 +111,19 @@ class SCMReleaseViewSet(FilterViewMixin, AuditViewSet):
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
         return super().get_queryset().filter(scm_pipeline_run__application__project__team__group__in=user_groups)
+
+
+class ApplicationMetadataViewSet(AuditViewSet):
+    model = ApplicationMetadata
+    serializer_class = ApplicationMetadataSerializer
+    lookup_field = 'key'
+
+    def get_queryset(self):
+        user_groups = self.request.user.groups.all()
+        kwargs = {
+            'application__project__team__group__in': user_groups,
+            'application__deleted': False,
+            'application': self.kwargs['applications_pk'],
+            'deleted': False,
+        }
+        return super().get_queryset().filter(**kwargs)

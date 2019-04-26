@@ -81,6 +81,15 @@ def project(team):
 
 
 @pytest.fixture
+def not_my_project(not_my_team):
+    project = models.Project(team=not_my_team, name='Project Not Mine', slug='NMP1')
+    with username_on_model(models.Project, 'initial'):
+        project.save()
+
+    return project
+
+
+@pytest.fixture
 def another_project(my_other_team):
     project = models.Project(team=my_other_team, name='Project 2', slug='PRJ2')
     with username_on_model(models.Project, 'initial'):
@@ -400,3 +409,41 @@ def another_scm_release(another_scm_pipeline_run):
         scm_release.save()
 
     return scm_release
+
+
+@pytest.fixture
+def metadata(application):
+    meta = models.ApplicationMetadata(key='ci', value='the-team', application=application)
+    with username_on_model(models.ApplicationMetadata, 'initial'):
+        meta.save()
+
+    return meta
+
+
+@pytest.fixture
+def deactivated_metadata(metadata):
+    metadata.deleted = True
+    with username_on_model(models.ApplicationMetadata, 'initial'):
+        metadata.save()
+
+    return metadata
+
+
+@pytest.fixture
+def not_my_application(another_scm_repository, not_my_project):
+    application = models.Application(project=not_my_project,
+                                     scm_repository=another_scm_repository,
+                                     name='Application 98', slug='APP98')
+    with username_on_model(models.Application, 'initial'):
+        application.save()
+
+    return application
+
+
+@pytest.fixture
+def not_my_metadata(not_my_application):
+    meta = models.ApplicationMetadata(key='ci-not-mine', value='the-team-not-mine', application=not_my_application)
+    with username_on_model(models.ApplicationMetadata, 'initial'):
+        meta.save()
+
+    return meta

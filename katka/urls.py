@@ -23,8 +23,12 @@ router.register('scm-releases', views.SCMReleaseViewSet, basename='scm-releases'
 secrets_router = NestedSimpleRouter(router, 'credentials', lookup='credentials')
 secrets_router.register('secrets', views.CredentialSecretsViewSet, basename='secrets')
 
+app_metadata_router = NestedSimpleRouter(router, 'applications', lookup='applications')
+app_metadata_router.register('metadata', views.ApplicationMetadataViewSet, basename='metadata')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
     path('', include(secrets_router.urls)),
+    path('', include(app_metadata_router.urls)),
 ]
