@@ -29,10 +29,12 @@ def update_pipeline_from_steps(sender, **kwargs):
 @receiver(post_save, sender=SCMPipelineRun)
 def send_pipeline_change_notification(sender, **kwargs):
     pipeline = kwargs['instance']
-    if pipeline.status == PIPELINE_STATUS_INITIALIZING:
+    if pipeline.status == PIPELINE_STATUS_INITIALIZING and kwargs['created'] is False:
         # Do not send notifications when the pipeline is initializing. While initializing, steps are created and
         # since this is done with several requests, several notifications would be sent, while the only one you
         # care about is when all the steps are created and the status is changed to 'in progress'.
+        # There is one exception though, a notify *should* be sent when the pipeline is first created, because
+        # the notification will trigger the creation of the steps.
         return
 
     session = settings.PIPELINE_CHANGE_NOTIFICATION_SESSION
