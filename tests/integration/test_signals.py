@@ -71,3 +71,29 @@ class TestSCMPipelineRunSignals:
 
             # should not be called because the pipeline is still initializing
             assert session.post.call_args_list == []
+
+    def test_send_on_create_pipeline(self, application):
+        session = mock.MagicMock()
+        overrides = {
+            'PIPELINE_CHANGE_NOTIFICATION_SESSION': session,
+            'PIPELINE_CHANGE_NOTIFICATION_URL': 'http://override-url/',
+        }
+        with override_settings(**overrides), username_on_model(SCMPipelineRun, 'signal_tester'):
+            pipeline_run = SCMPipelineRun.objects.create(steps_total=0, application=application)
+
+        # should not be called because the pipeline is still initializing
+        assert session.post.call_args_list == [
+            mock.call('http://override-url/', json={'public_identifier': str(pipeline_run.public_identifier)}),
+        ]
+
+        with override_settings(**overrides), username_on_model(SCMPipelineRun, 'signal_tester'):
+            pipeline_run.steps_total = 1
+            pipeline_run.save()
+
+        assert len(session.post.call_args_list) == 1
+
+        with override_settings(**overrides), username_on_model(SCMPipelineRun, 'signal_tester'):
+            pipeline_run.status = constants.PIPELINE_STATUS_IN_PROGRESS
+            pipeline_run.save()
+
+        assert len(session.post.call_args_list) == 2
