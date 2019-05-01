@@ -145,9 +145,6 @@ do-release:
   stage: release
 '''
         data = {'commit_hash': '4015B57A143AEC5156FD1444A017A32137A3FD0F',
-                'status': 'in progress',
-                'steps_total': 10,
-                'pipeline_yaml': pipeline_yaml,
                 'application': application.public_identifier}
         response = client.post(url, data=data, content_type='application/json')
         assert response.status_code == 201
