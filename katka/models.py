@@ -57,6 +57,9 @@ class CredentialSecret(AuditedModel):
 
 
 class SCMService(AuditedModel):
+    class Meta:
+        verbose_name = 'SCM service'
+        verbose_name_plural = 'SCM services'
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     scm_service_type = models.CharField(max_length=48)
@@ -67,6 +70,9 @@ class SCMService(AuditedModel):
 
 
 class SCMRepository(AuditedModel):
+    class Meta:
+        verbose_name = 'SCM repository'
+        verbose_name_plural = 'SCM repositories'
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organisation = models.CharField(max_length=128)
@@ -94,6 +100,10 @@ class Application(AuditedModel):
 
 # Pipeline run results
 class SCMPipelineRun(AuditedModel):
+    class Meta:
+        verbose_name = 'SCM pipeline'
+        verbose_name_plural = 'SCM pipelines'
+
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     commit_hash = models.CharField(max_length=64)  # A SHA-1 hash is 40 characters, SHA-256 is 64 characters
     status = models.CharField(max_length=30, choices=PIPELINE_STATUS_CHOICES, default=PIPELINE_STATUS_INITIALIZING)
@@ -104,6 +114,10 @@ class SCMPipelineRun(AuditedModel):
 
 
 class SCMStepRun(AuditedModel):
+    class Meta:
+        verbose_name = 'SCM step'
+        verbose_name_plural = 'SCM steps'
+
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     slug = KatkaSlugField(max_length=30)
     name = models.CharField(max_length=100)
@@ -115,6 +129,10 @@ class SCMStepRun(AuditedModel):
 
 # SCM Releases, comprises a range of commits that are released
 class SCMRelease(AuditedModel):
+    class Meta:
+        verbose_name = 'SCM release'
+        verbose_name_plural = 'SCM releases'
+
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     released = models.DateTimeField(null=True)
