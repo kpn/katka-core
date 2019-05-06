@@ -46,23 +46,30 @@ class SCMServiceAdmin(WithUsernameAdminModel):
 @admin.register(SCMRepository)
 class SCMRepositoryAdmin(WithUsernameAdminModel):
     fields = ('organisation', 'repository_name', 'credential', 'scm_service')
+    list_display = ('pk', 'scm_service', 'organisation', 'repository_name')
 
 
 @admin.register(SCMPipelineRun)
 class SCMPipelineRunAdmin(WithUsernameAdminModel):
     fields = ('commit_hash', 'status', 'steps_total', 'steps_completed', 'pipeline_yaml', 'application')
+    list_display = ('pk', 'application', 'commit_hash')
+    list_filter = ('application__name',)
 
 
 @admin.register(SCMStepRun)
 class SCMStepRunAdmin(WithUsernameAdminModel):
     fields = ('slug', 'name', 'stage', 'status', 'output', 'scm_pipeline_run')
+    list_display = ('pk', 'scm_pipeline_run', 'name', 'stage', 'status')
+    list_filter = ('scm_pipeline_run__application__name',)
 
 
 @admin.register(ApplicationMetadata)
 class ApplicationMetadataAdmin(WithUsernameAdminModel):
     fields = ('key', 'value', 'application')
+    list_display = ('pk', 'application', 'key')
 
 
 @admin.register(SCMRelease)
 class SCMReleaseAdmin(WithUsernameAdminModel):
     fields = ('name', 'released', 'from_hash', 'to_hash', 'scm_pipeline_run')
+    list_display = ('pk', 'scm_pipeline_run', 'name')
