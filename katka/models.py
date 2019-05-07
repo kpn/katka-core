@@ -124,6 +124,18 @@ class SCMStepRun(AuditedModel):
     stage = models.CharField(max_length=100)
     status = models.CharField(max_length=30, choices=STEP_STATUS_CHOICES, default=STEP_STATUS_NOT_STARTED)
     output = models.TextField(blank=True)
+    sequence_id = models.CharField(max_length=30, blank=True, null=True)
+    # The format of a sequence ID is: <stage_nr>.<step_nr>-<parallel_nr>, with the following explanation:
+    #
+    #   stage_nr: the sequence number of the stage. The first stage gets number 1, the next 2, then 3, etc.
+    #   step_nr: the sequence number of the step inside a stage. Each first step of the stage gets 1, then 2,
+    #            then 3, etc.
+    #   parallel_nr: these steps can be done in parallel so they only need a sequence so that the interface will show
+    #                the steps in a consistent way.
+    #
+    # an example would be: "1.1-1" or "1.1" if there are no parallel steps. There should be zero padding, so if
+    # there are more than 9 stages, it should be "01.1", or if there are more than 9 steps: "1.01".
+    # This allows easy sorting for e.g. frontends.
     scm_pipeline_run = models.ForeignKey(SCMPipelineRun, on_delete=models.PROTECT)
 
 
