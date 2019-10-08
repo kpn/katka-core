@@ -380,11 +380,11 @@ def deactivated_scm_step_run(scm_step_run):
 def scm_release(scm_pipeline_run):
     scm_release = models.SCMRelease(name='Version 0.13.1',
                                     from_hash='577fe3f6a091aa4bad996623b1548b87f4f9c1f8',
-                                    to_hash='a49954f060b1b7605e972c9448a74d4067547443',
-                                    scm_pipeline_run=scm_pipeline_run)
+                                    to_hash='a49954f060b1b7605e972c9448a74d4067547443')
 
     with username_on_model(models.SCMRelease, 'initial'):
         scm_release.save()
+        scm_release.scm_pipeline_runs.set([scm_pipeline_run])
 
     return scm_release
 
@@ -402,11 +402,11 @@ def deactivated_scm_release(scm_release):
 def another_scm_release(another_scm_pipeline_run):
     scm_release = models.SCMRelease(name='Version 15.0',
                                     from_hash='100763d7144e1f993289bd528dc698dd3906a807',
-                                    to_hash='38d72050370e6e0b43df649c9630f7135ef6de0d',
-                                    scm_pipeline_run=another_scm_pipeline_run)
+                                    to_hash='38d72050370e6e0b43df649c9630f7135ef6de0d')
 
     with username_on_model(models.SCMRelease, 'initial'):
         scm_release.save()
+        scm_release.scm_pipeline_runs.set([another_scm_pipeline_run])
 
     return scm_release
 

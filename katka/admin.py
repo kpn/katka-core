@@ -71,5 +71,5 @@ class ApplicationMetadataAdmin(WithUsernameAdminModel):
 
 @admin.register(SCMRelease)
 class SCMReleaseAdmin(WithUsernameAdminModel):
-    fields = ('name', 'released', 'from_hash', 'to_hash', 'scm_pipeline_run')
-    list_display = ('pk', 'scm_pipeline_run', 'name')
+    fields = ('name', 'status', 'released', 'from_hash', 'to_hash', 'scm_pipeline_runs')
+    list_display = ('pk', 'name')
