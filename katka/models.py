@@ -6,7 +6,8 @@ from django.db import models
 from encrypted_model_fields.fields import EncryptedCharField
 from katka.auditedmodel import AuditedModel
 from katka.constants import (
-    PIPELINE_STATUS_CHOICES, PIPELINE_STATUS_INITIALIZING, STEP_STATUS_CHOICES, STEP_STATUS_NOT_STARTED,
+    PIPELINE_STATUS_CHOICES, PIPELINE_STATUS_INITIALIZING, RELEASE_STATUS_CHOICES, RELEASE_STATUS_OPEN,
+    STEP_STATUS_CHOICES, STEP_STATUS_NOT_STARTED,
 )
 from katka.fields import KatkaSlugField
 
@@ -147,11 +148,11 @@ class SCMRelease(AuditedModel):
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
+    status = models.CharField(max_length=30, choices=RELEASE_STATUS_CHOICES, default=RELEASE_STATUS_OPEN)
     released = models.DateTimeField(null=True)
     from_hash = models.CharField(max_length=64)
     to_hash = models.CharField(max_length=64)
-    # points to the pipeline run that created the release, and contains the information on the deployment pipeline
-    scm_pipeline_run = models.ForeignKey(SCMPipelineRun, on_delete=models.PROTECT)
+    scm_pipeline_runs = models.ManyToManyField(SCMPipelineRun)
 
 
 class ApplicationMetadata(AuditedModel):
