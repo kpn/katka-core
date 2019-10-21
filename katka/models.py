@@ -138,6 +138,7 @@ class SCMStepRun(AuditedModel):
     # there are more than 9 stages, it should be "01.1", or if there are more than 9 steps: "1.01".
     # This allows easy sorting for e.g. frontends.
     scm_pipeline_run = models.ForeignKey(SCMPipelineRun, on_delete=models.PROTECT)
+    tags = models.TextField(blank=True)
 
 
 # SCM Releases, comprises a range of commits that are released
