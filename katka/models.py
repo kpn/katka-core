@@ -6,7 +6,7 @@ from django.db import models
 from encrypted_model_fields.fields import EncryptedCharField
 from katka.auditedmodel import AuditedModel
 from katka.constants import (
-    PIPELINE_STATUS_CHOICES, PIPELINE_STATUS_INITIALIZING, RELEASE_STATUS_CHOICES, RELEASE_STATUS_OPEN,
+    PIPELINE_STATUS_CHOICES, PIPELINE_STATUS_INITIALIZING, RELEASE_STATUS_CHOICES, RELEASE_STATUS_IN_PROGRESS,
     STEP_STATUS_CHOICES, STEP_STATUS_NOT_STARTED,
 )
 from katka.fields import KatkaSlugField
@@ -149,7 +149,7 @@ class SCMRelease(AuditedModel):
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    status = models.CharField(max_length=30, choices=RELEASE_STATUS_CHOICES, default=RELEASE_STATUS_OPEN)
+    status = models.CharField(max_length=30, choices=RELEASE_STATUS_CHOICES, default=RELEASE_STATUS_IN_PROGRESS)
     released = models.DateTimeField(null=True)
     from_hash = models.CharField(max_length=64)
     to_hash = models.CharField(max_length=64)

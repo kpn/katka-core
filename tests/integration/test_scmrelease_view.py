@@ -64,7 +64,7 @@ class TestSCMReleaseViewSet:
         assert parsed[0]['released'] is None
         assert parsed[0]['from_hash'] == '577fe3f6a091aa4bad996623b1548b87f4f9c1f8'
         assert parsed[0]['to_hash'] == 'a49954f060b1b7605e972c9448a74d4067547443'
-        assert parsed[0]['status'] == 'open'
+        assert parsed[0]['status'] == 'in progress'
         assert len(parsed[0]['scm_pipeline_runs']) == 1
         assert UUID(parsed[0]['scm_pipeline_runs'][0]) == scm_pipeline_run.public_identifier
         UUID(parsed[0]['public_identifier'])  # should not raise
@@ -81,7 +81,7 @@ class TestSCMReleaseViewSet:
         assert parsed[0]['released'] is None
         assert parsed[0]['from_hash'] == '100763d7144e1f993289bd528dc698dd3906a807'
         assert parsed[0]['to_hash'] == '38d72050370e6e0b43df649c9630f7135ef6de0d'
-        assert parsed[0]['status'] == 'open'
+        assert parsed[0]['status'] == 'in progress'
         assert len(parsed[0]['scm_pipeline_runs']) == 1
         assert UUID(parsed[0]['scm_pipeline_runs'][0]) == another_scm_pipeline_run.public_identifier
 
@@ -107,7 +107,7 @@ class TestSCMReleaseViewSet:
         assert parsed['released'] is None
         assert parsed['from_hash'] == '577fe3f6a091aa4bad996623b1548b87f4f9c1f8'
         assert parsed['to_hash'] == 'a49954f060b1b7605e972c9448a74d4067547443'
-        assert parsed['status'] == 'open'
+        assert parsed['status'] == 'in progress'
         assert len(parsed['scm_pipeline_runs']) == 1
         assert UUID(parsed['scm_pipeline_runs'][0]) == scm_pipeline_run.public_identifier
 
