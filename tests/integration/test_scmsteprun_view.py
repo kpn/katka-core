@@ -110,6 +110,7 @@ class TestSCMStepRunViewSet:
         assert parsed['status'] == 'not started'
         assert parsed['output'] == ''
         assert parsed['sequence_id'] == '1.1-1'
+        assert parsed['tags'] == ''
         assert UUID(parsed['scm_pipeline_run']) == scm_pipeline_run.public_identifier
         UUID(parsed['public_identifier'])  # should not raise
 
@@ -131,12 +132,14 @@ class TestSCMStepRunViewSet:
                 'status': 'success',
                 'output': 'Command completed',
                 'sequence_id': '01.02-03',
+                'tags': 'tag1 tag2',
                 'scm_pipeline_run': scm_pipeline_run.public_identifier}
         response = client.put(url, data, content_type='application/json')
         assert response.status_code == 200
         p = models.SCMStepRun.objects.get(pk=scm_step_run.public_identifier)
         assert p.name == 'Release product'
         assert p.sequence_id == '01.02-03'
+        assert p.tags == 'tag1 tag2'
 
     def test_partial_update(self, client, logged_in_user, scm_step_run):
         url = f'/scm-step-runs/{scm_step_run.public_identifier}/'
