@@ -447,3 +447,109 @@ def not_my_metadata(not_my_application):
         meta.save()
 
     return meta
+
+
+@pytest.fixture
+def step_data(scm_pipeline_run):
+
+    steps = [
+        {"name": "step0", "stage": "prepare", "seq": "1.1-1", "status": "success", "tags": ""},
+        {"name": "step1", "stage": "prepare", "seq": "1.2-1", "status": "success", "tags": ""},
+        {"name": "step2", "stage": "deploy", "seq": "2.1-1", "status": "success", "tags": ""},
+        {"name": "step3", "stage": "deploy", "seq": "2.2-1", "status": "success", "tags": ""},
+        {"name": "step4", "stage": "deploy", "seq": "2.3-1", "status": "success", "tags": ""},
+        {"name": "step5", "stage": "deploy", "seq": "2.4-1", "status": "success", "tags": ""},
+        {"name": "step6", "stage": "deploy", "seq": "2.5-1", "status": "success", "tags": ""},
+    ]
+    return steps
+
+
+def _create_steps_from_dict(scm_pipeline_run, step_data):
+    saved_steps = []
+    for step in step_data:
+        scm_step_run = models.SCMStepRun(slug=step["name"], name=step["name"], stage=step["stage"],
+                                         scm_pipeline_run=scm_pipeline_run, sequence_id=step["seq"],
+                                         status=step["status"], tags=step["tags"])
+
+        with username_on_model(models.SCMStepRun, 'initial'):
+            scm_step_run.save()
+            saved_steps.append(scm_step_run)
+
+    return saved_steps
+
+
+@pytest.fixture
+def scm_step_run_success_list(scm_pipeline_run, step_data):
+    return _create_steps_from_dict(scm_pipeline_run, step_data)
+
+
+@pytest.fixture
+def scm_step_run_success_list_with_start_tag(scm_pipeline_run, step_data):
+    step_data[2]["tags"] = "production_change_start"
+    return _create_steps_from_dict(scm_pipeline_run, step_data)
+
+
+@pytest.fixture
+def scm_step_run_success_list_with_start_end_tags(scm_pipeline_run, step_data):
+    step_data[2]["tags"] = "production_change_start"
+    step_data[5]["tags"] = "production_change_end"
+    return _create_steps_from_dict(scm_pipeline_run, step_data)
+
+
+@pytest.fixture
+def scm_step_run_one_failed_step_list_with_start_end_tags(scm_pipeline_run, step_data):
+    step_data[2]["tags"] = "production_change_start"
+    step_data[4]["status"] = "failed"
+    step_data[5]["tags"] = "production_change_end"
+    return _create_steps_from_dict(scm_pipeline_run, step_data)
+
+
+@pytest.fixture
+def scm_step_run_one_failed_step_before_start_tag(scm_pipeline_run, step_data):
+    step_data[1]["status"] = "failed"
+    step_data[2]["status"] = "skipped"
+    step_data[3]["status"] = "skipped"
+    step_data[4]["status"] = "skipped"
+    step_data[6]["status"] = "skipped"
+    step_data[2]["tags"] = "production_change_start"
+    step_data[5]["tags"] = "production_change_end"
+    return _create_steps_from_dict(scm_pipeline_run, step_data)
+
+
+@pytest.fixture
+def scm_step_run_one_failed_step_after_end_tag(scm_pipeline_run, step_data):
+    step_data[2]["tags"] = "production_change_start"
+    step_data[5]["tags"] = "production_change_end"
+    step_data[6]["status"] = "failed"
+    return _create_steps_from_dict(scm_pipeline_run, step_data)
+
+
+@pytest.fixture
+def scm_pipeline_run_with_no_open_release(another_project, another_scm_repository,
+                                          scm_step_run_success_list_with_start_end_tags):
+    application = models.Application(project=another_project,
+                                     scm_repository=another_scm_repository,
+                                     name='Application 2', slug='APP2')
+    with username_on_model(models.Application, 'initial'):
+        application.save()
+
+    pipeline_yaml = '''stages:
+             - release
+
+           do-release:
+             stage: release
+           '''
+    scm_pipeline_run = models.SCMPipelineRun(application=application,
+                                             pipeline_yaml=pipeline_yaml,
+                                             steps_total=5,
+                                             status="success",
+                                             commit_hash='4015B57A143AEC5156FD1444A017A32137A3FD0F')
+    with username_on_model(models.SCMPipelineRun, 'initial'):
+        scm_pipeline_run.save()
+
+    with username_on_model(models.SCMStepRun, 'initial'):
+        for step in scm_step_run_success_list_with_start_end_tags:
+            step.scm_pipeline_run = scm_pipeline_run
+            step.save()
+
+    return scm_pipeline_run
