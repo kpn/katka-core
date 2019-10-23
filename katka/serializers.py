@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group
 
+from katka.constants import STEP_STATUS_CHOICES
 from katka.models import (
     Application, ApplicationMetadata, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRelease, SCMRepository,
     SCMService, SCMStepRun, Team,
@@ -107,6 +108,22 @@ class SCMStepRunSerializer(KatkaSerializer):
         fields = (
             'public_identifier', 'slug', 'name', 'stage', 'status', 'output', 'sequence_id', 'scm_pipeline_run', 'tags'
         )
+
+
+class SCMStepRunUpdateSerializer(KatkaSerializer):
+    # it seems redundant to declare this field here as it is declared in the model, but in this
+    # context it's a required field and in the model it's optional, thus the duplication.
+    status = serializers.ChoiceField(required=True, choices=STEP_STATUS_CHOICES)
+
+    class Meta:
+        model = SCMStepRun
+        fields = (
+            'public_identifier', 'status'
+        )
+
+    def __init__(self, *args, **kwargs):
+        kwargs['partial'] = False  # otherwise DRF will allow empty status
+        super().__init__(*args, **kwargs)
 
 
 class SCMReleaseSerializer(KatkaSerializer):
