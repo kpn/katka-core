@@ -382,8 +382,6 @@ def scm_release(scm_pipeline_run):
 
     with username_on_model(models.SCMRelease, 'initial'):
         scm_release.name = 'Version 0.13.1'
-        scm_release.from_hash = '577fe3f6a091aa4bad996623b1548b87f4f9c1f8'
-        scm_release.to_hash = 'a49954f060b1b7605e972c9448a74d4067547443'
         scm_release.save()
 
     return scm_release
@@ -404,8 +402,6 @@ def another_scm_release(another_scm_pipeline_run):
 
     with username_on_model(models.SCMRelease, 'initial'):
         scm_release.name = 'Version 15.0'
-        scm_release.from_hash = '100763d7144e1f993289bd528dc698dd3906a807'
-        scm_release.to_hash = '38d72050370e6e0b43df649c9630f7135ef6de0d'
         scm_release.save()
 
     return scm_release
@@ -451,15 +447,15 @@ def not_my_metadata(not_my_application):
 
 @pytest.fixture
 def step_data(scm_pipeline_run):
-
+    version = '{"release.version": "1.0.0"}'
     steps = [
-        {"name": "step0", "stage": "prepare", "seq": "1.1-1", "status": "success", "tags": ""},
-        {"name": "step1", "stage": "prepare", "seq": "1.2-1", "status": "success", "tags": ""},
-        {"name": "step2", "stage": "deploy", "seq": "2.1-1", "status": "success", "tags": ""},
-        {"name": "step3", "stage": "deploy", "seq": "2.2-1", "status": "success", "tags": ""},
-        {"name": "step4", "stage": "deploy", "seq": "2.3-1", "status": "success", "tags": ""},
-        {"name": "step5", "stage": "deploy", "seq": "2.4-1", "status": "success", "tags": ""},
-        {"name": "step6", "stage": "deploy", "seq": "2.5-1", "status": "success", "tags": ""},
+        {"name": "step0", "stage": "prepare", "seq": "1.1-1", "status": "success", "tags": "", "output": version},
+        {"name": "step1", "stage": "prepare", "seq": "1.2-1", "status": "success", "tags": "", "output": ""},
+        {"name": "step2", "stage": "deploy", "seq": "2.1-1", "status": "success", "tags": "", "output": ""},
+        {"name": "step3", "stage": "deploy", "seq": "2.2-1", "status": "success", "tags": "", "output": ""},
+        {"name": "step4", "stage": "deploy", "seq": "2.3-1", "status": "success", "tags": "", "output": ""},
+        {"name": "step5", "stage": "deploy", "seq": "2.4-1", "status": "success", "tags": "", "output": ""},
+        {"name": "step6", "stage": "deploy", "seq": "2.5-1", "status": "success", "tags": "", "output": ""},
     ]
     return steps
 
@@ -469,7 +465,7 @@ def _create_steps_from_dict(scm_pipeline_run, step_data):
     for step in step_data:
         scm_step_run = models.SCMStepRun(slug=step["name"], name=step["name"], stage=step["stage"],
                                          scm_pipeline_run=scm_pipeline_run, sequence_id=step["seq"],
-                                         status=step["status"], tags=step["tags"])
+                                         status=step["status"], tags=step["tags"], output=step["output"])
 
         with username_on_model(models.SCMStepRun, 'initial'):
             scm_step_run.save()
@@ -521,6 +517,22 @@ def scm_step_run_one_failed_step_after_end_tag(scm_pipeline_run, step_data):
     step_data[2]["tags"] = "production_change_start"
     step_data[5]["tags"] = "production_change_end"
     step_data[6]["status"] = "failed"
+    return _create_steps_from_dict(scm_pipeline_run, step_data)
+
+
+@pytest.fixture
+def scm_step_run_without_version_output(scm_pipeline_run, step_data):
+    step_data[0]["output"] = ""
+    step_data[2]["tags"] = "production_change_start"
+    step_data[5]["tags"] = "production_change_end"
+    return _create_steps_from_dict(scm_pipeline_run, step_data)
+
+
+@pytest.fixture
+def scm_step_run_with_broken_output(scm_pipeline_run, step_data):
+    step_data[2]["output"] = "1:2"
+    step_data[2]["tags"] = "production_change_start"
+    step_data[5]["tags"] = "production_change_end"
     return _create_steps_from_dict(scm_pipeline_run, step_data)
 
 

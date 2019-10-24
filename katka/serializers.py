@@ -129,22 +129,18 @@ class SCMStepRunUpdateSerializer(KatkaSerializer):
 class SCMReleaseSerializer(KatkaSerializer):
     scm_pipeline_runs = SCMPipelineRunRelatedField(required=False, read_only=True, many=True)
 
-    released = serializers.DateTimeField(required=False)
-
     class Meta:
         model = SCMRelease
-        fields = ('public_identifier', 'name', 'released', 'from_hash', 'to_hash', 'scm_pipeline_runs', 'status')
-        read_only_fields = ('from_hash', 'to_hash', 'scm_pipeline_runs')
+        fields = ('public_identifier', 'name', 'started', 'ended', 'scm_pipeline_runs', 'status')
+        read_only_fields = ('started', 'ended', 'scm_pipeline_runs')
 
 
 class SCMReleaseCreateSerializer(KatkaSerializer):
     scm_pipeline_runs = SCMPipelineRunRelatedField(required=False, many=True)
 
-    released = serializers.DateTimeField(required=False)
-
     class Meta:
         model = SCMRelease
-        fields = ('public_identifier', 'name', 'released', 'from_hash', 'to_hash', 'scm_pipeline_runs', 'status')
+        fields = ('name', 'scm_pipeline_runs', 'status')
 
 
 class ApplicationMetadataSerializer(serializers.ModelSerializer):

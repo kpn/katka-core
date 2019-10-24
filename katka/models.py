@@ -150,9 +150,8 @@ class SCMRelease(AuditedModel):
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     status = models.CharField(max_length=30, choices=RELEASE_STATUS_CHOICES, default=RELEASE_STATUS_IN_PROGRESS)
-    released = models.DateTimeField(null=True)
-    from_hash = models.CharField(max_length=64)
-    to_hash = models.CharField(max_length=64)
+    started = models.DateTimeField(null=True)
+    ended = models.DateTimeField(null=True)
     scm_pipeline_runs = models.ManyToManyField(SCMPipelineRun)
 
 
