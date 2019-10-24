@@ -5,9 +5,9 @@ from katka.models import (
 from katka.serializers import (
     ApplicationMetadataSerializer, ApplicationSerializer, CredentialSecretSerializer, CredentialSerializer,
     ProjectSerializer, SCMPipelineRunSerializer, SCMReleaseSerializer, SCMRepositorySerializer, SCMServiceSerializer,
-    SCMStepRunSerializer, TeamSerializer,
+    SCMStepRunSerializer, SCMStepRunUpdateSerializer, TeamSerializer,
 )
-from katka.viewsets import AuditViewSet, FilterViewMixin, ReadOnlyAuditViewMixin
+from katka.viewsets import AuditViewSet, FilterViewMixin, ReadOnlyAuditViewMixin, UpdateAuditMixin
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -96,6 +96,17 @@ class SCMStepRunViewSet(FilterViewMixin, AuditViewSet):
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
         return super().get_queryset().filter(scm_pipeline_run__application__project__team__group__in=user_groups)
+
+
+class SCMStepRunUpdateStatusView(UpdateAuditMixin):
+    model = SCMStepRun
+    serializer_class = SCMStepRunUpdateSerializer
+
+    def get_queryset(self):
+        user_groups = self.request.user.groups.all()
+        return self.model.objects.exclude(deleted=True).filter(
+            scm_pipeline_run__application__project__team__group__in=user_groups
+        )
 
 
 class SCMReleaseViewSet(FilterViewMixin, ReadOnlyAuditViewMixin):

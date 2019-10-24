@@ -13,18 +13,21 @@ class ReadOnlyAuditViewMixin(mixins.RetrieveModelMixin,
         return self.model.objects.exclude(deleted=True)
 
 
+class UpdateAuditMixin(mixins.UpdateModelMixin, GenericViewSet):
+
+    def update(self, request, *args, **kwargs):
+        with username_on_model(self.model, request.user.username):
+            return super().update(request, *args, **kwargs)
+
+
 class AuditViewSet(mixins.CreateModelMixin,
-                   mixins.UpdateModelMixin,
+                   UpdateAuditMixin,
                    mixins.DestroyModelMixin,
                    ReadOnlyAuditViewMixin):
 
     def create(self, request, *args, **kwargs):
         with username_on_model(self.model, request.user.username):
             return super().create(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        with username_on_model(self.model, request.user.username):
-            return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
