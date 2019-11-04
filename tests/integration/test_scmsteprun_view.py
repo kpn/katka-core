@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from django.utils.dateparse import parse_datetime
+
 import pytest
 from katka import models
 
@@ -68,6 +70,8 @@ class TestSCMStepRunViewSet:
         assert parsed[0]['stage'] == 'Production'
         assert parsed[0]['status'] == 'not started'
         assert parsed[0]['output'] == ''
+        assert parsed[0]['started'] == '2018-11-11T08:25:30'
+        assert parsed[0]['ended'] == '2018-11-11T09:01:40'
         assert UUID(parsed[0]['scm_pipeline_run']) == scm_pipeline_run.public_identifier
         UUID(parsed[0]['public_identifier'])  # should not raise
 
@@ -83,6 +87,8 @@ class TestSCMStepRunViewSet:
         assert parsed[0]['stage'] == 'Production'
         assert parsed[0]['status'] == 'not started'
         assert parsed[0]['output'] == ''
+        assert parsed[0]['started'] is None
+        assert parsed[0]['ended'] is None
         assert UUID(parsed[0]['scm_pipeline_run']) == another_scm_pipeline_run.public_identifier
         UUID(parsed[0]['public_identifier'])  # should not raise
 
@@ -111,6 +117,8 @@ class TestSCMStepRunViewSet:
         assert parsed['output'] == ''
         assert parsed['sequence_id'] == '1.1-1'
         assert parsed['tags'] == ''
+        assert parsed['started'] == '2018-11-11T08:25:30'
+        assert parsed['ended'] == '2018-11-11T09:01:40'
         assert UUID(parsed['scm_pipeline_run']) == scm_pipeline_run.public_identifier
         UUID(parsed['public_identifier'])  # should not raise
 
@@ -133,6 +141,8 @@ class TestSCMStepRunViewSet:
                 'output': 'Command completed',
                 'sequence_id': '01.02-03',
                 'tags': 'tag1 tag2',
+                'started': '2019-01-25 01:02:03',
+                'ended': '2019-02-13 02:03:04',
                 'scm_pipeline_run': scm_pipeline_run.public_identifier}
         response = client.put(url, data, content_type='application/json')
         assert response.status_code == 200
@@ -140,14 +150,20 @@ class TestSCMStepRunViewSet:
         assert p.name == 'Release product'
         assert p.sequence_id == '01.02-03'
         assert p.tags == 'tag1 tag2'
+        assert p.started == parse_datetime('2019-01-25T01:02:03')
+        assert p.ended == parse_datetime('2019-02-13T02:03:04')
 
     def test_partial_update(self, client, logged_in_user, scm_step_run):
         url = f'/scm-step-runs/{scm_step_run.public_identifier}/'
-        data = {'output': 'Step executed.'}
+        data = {'output': 'Step executed.',
+                'started': '2019-01-25 01:02:03',
+                'ended': '2019-02-13 02:03:04'}
         response = client.patch(url, data, content_type='application/json')
         assert response.status_code == 200
         p = models.SCMStepRun.objects.get(pk=scm_step_run.public_identifier)
         assert p.output == 'Step executed.'
+        assert p.started == parse_datetime('2019-01-25T01:02:03')
+        assert p.ended == parse_datetime('2019-02-13T02:03:04')
 
     def test_create(self, client, logged_in_user, scm_pipeline_run, scm_step_run):
         initial_count = models.SCMStepRun.objects.count()

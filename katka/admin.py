@@ -58,8 +58,8 @@ class SCMPipelineRunAdmin(WithUsernameAdminModel):
 
 @admin.register(SCMStepRun)
 class SCMStepRunAdmin(WithUsernameAdminModel):
-    fields = ('slug', 'name', 'stage', 'status', 'output', 'scm_pipeline_run')
-    list_display = ('pk', 'scm_pipeline_run', 'name', 'stage', 'status')
+    fields = ('slug', 'name', 'stage', 'status', 'output', 'started', 'ended', 'scm_pipeline_run')
+    list_display = ('pk', 'scm_pipeline_run', 'name', 'stage', 'status', 'started', 'ended')
     list_filter = ('scm_pipeline_run__application__name',)
 
 
