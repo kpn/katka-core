@@ -52,6 +52,9 @@ TEMPLATES = (
     },
 )
 
+TIME_ZONE = 'UTC'
+USE_TZ = True
+
 REQUESTS_CA_BUNDLE = '/etc/ssl/certs/ca-certificates.crt'
 
 PIPELINE_CHANGE_NOTIFICATION_SESSION = session.Session()
