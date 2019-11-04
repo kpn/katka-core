@@ -139,6 +139,8 @@ class SCMStepRun(AuditedModel):
     # This allows easy sorting for e.g. frontends.
     scm_pipeline_run = models.ForeignKey(SCMPipelineRun, on_delete=models.PROTECT)
     tags = models.TextField(blank=True)
+    started = models.DateTimeField(blank=True, null=True)
+    ended = models.DateTimeField(blank=True, null=True)
 
 
 # SCM Releases, comprises a range of commits that are released

@@ -348,7 +348,8 @@ def deactivated_scm_pipeline_run(scm_pipeline_run):
 @pytest.fixture
 def scm_step_run(scm_pipeline_run):
     scm_step_run = models.SCMStepRun(slug='release', name='Release Katka', stage='Production',
-                                     scm_pipeline_run=scm_pipeline_run, sequence_id='1.1-1')
+                                     scm_pipeline_run=scm_pipeline_run, sequence_id='1.1-1',
+                                     started='2018-11-11 08:25:30', ended='2018-11-11 09:01:40')
 
     with username_on_model(models.SCMStepRun, 'initial'):
         scm_step_run.save()
