@@ -15,8 +15,8 @@ class TestCloseRelease:
         release = SCMRelease.objects.first()
         assert release.name == name
         assert release.status == constants.RELEASE_STATUS_SUCCESS
-        assert release.started is not None
-        assert release.ended is not None
+        assert release.started_at is not None
+        assert release.ended_at is not None
 
     @staticmethod
     def _assert_release_has_status(status):
@@ -25,18 +25,18 @@ class TestCloseRelease:
         assert release.status == status
 
     @staticmethod
-    def _assert_release_has_start_and_end_date(started=None, ended=None):
+    def _assert_release_has_start_and_end_date(started_at=None, ended_at=None):
         assert SCMRelease.objects.count() == 1
         release = SCMRelease.objects.first()
-        if started:
-            assert release.started == parse_datetime(started)
+        if started_at:
+            assert release.started_at == parse_datetime(started_at)
         else:
-            assert release.started is None
+            assert release.started_at is None
 
-        if ended:
-            assert release.ended == parse_datetime(ended)
+        if ended_at:
+            assert release.ended_at == parse_datetime(ended_at)
         else:
-            assert release.ended is None
+            assert release.ended_at is None
 
     def test_do_nothing_if_pipeline_run_status_not_finished(self, scm_pipeline_run):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
