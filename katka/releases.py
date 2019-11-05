@@ -80,13 +80,13 @@ def _gather_steps_pre_conditions(pipeline):
             continue
         _add_output(pipeline_output=pipeline_output, step_output=step.output)
         if constants.TAG_PRODUCTION_CHANGE_STARTED in step.tags.split(" "):
-            prod_start_date = step.modified
+            prod_start_date = step.started
 
         if prod_start_date is not None:
             success_status_between_start_end.append(step.status == constants.STEP_STATUS_SUCCESS)
 
         if constants.TAG_PRODUCTION_CHANGE_ENDED in step.tags.split(" "):
-            prod_end_date = step.modified
+            prod_end_date = step.ended
             break
 
     return StepsPreConditions(pipeline_output.get("release.version"),

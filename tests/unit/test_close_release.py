@@ -1,3 +1,5 @@
+from django.utils.dateparse import parse_datetime
+
 import pytest
 from katka import constants
 from katka.models import SCMRelease
@@ -21,6 +23,20 @@ class TestCloseRelease:
         assert SCMRelease.objects.count() == 1
         release = SCMRelease.objects.first()
         assert release.status == status
+
+    @staticmethod
+    def _assert_release_has_start_and_end_date(started=None, ended=None):
+        assert SCMRelease.objects.count() == 1
+        release = SCMRelease.objects.first()
+        if started:
+            assert release.started == parse_datetime(started)
+        else:
+            assert release.started is None
+
+        if ended:
+            assert release.ended == parse_datetime(ended)
+        else:
+            assert release.ended is None
 
     def test_do_nothing_if_pipeline_run_status_not_finished(self, scm_pipeline_run):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
@@ -65,6 +81,7 @@ class TestCloseRelease:
         assert result_status == constants.PIPELINE_STATUS_SUCCESS
 
         self._assert_release_success_with_name("1.0.0")
+        self._assert_release_has_start_and_end_date("2018-11-11 08:45:30+00:00", "2018-11-11 09:15:41+00:00")
 
     def test_one_failed_step_between_start_end_tags(self, scm_pipeline_run,
                                                     scm_step_run_one_failed_step_list_with_start_end_tags):
@@ -75,6 +92,7 @@ class TestCloseRelease:
         assert result_status == constants.RELEASE_STATUS_FAILED
 
         self._assert_release_has_status(constants.RELEASE_STATUS_FAILED)
+        self._assert_release_has_start_and_end_date("2018-11-11 08:45:30+00:00", "2018-11-11 09:15:41+00:00")
 
     def test_one_failed_step_before_start_tag(self, scm_pipeline_run,
                                               scm_step_run_one_failed_step_before_start_tag):
@@ -85,6 +103,7 @@ class TestCloseRelease:
         assert result_status is None
 
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
+        self._assert_release_has_start_and_end_date(None, None)
 
     def test_one_failed_step_after_end_tag(self, scm_pipeline_run,
                                            scm_step_run_one_failed_step_after_end_tag):
@@ -94,6 +113,7 @@ class TestCloseRelease:
         result_status = close_release_if_pipeline_finished(scm_pipeline_run)
         assert result_status == constants.RELEASE_STATUS_SUCCESS
         self._assert_release_success_with_name("1.0.0")
+        self._assert_release_has_start_and_end_date("2018-11-11 08:45:30+00:00", "2018-11-11 09:15:41+00:00")
 
     def test_fails_if_version_not_present_in_context(self, scm_pipeline_run,
                                                      scm_step_run_without_version_output):
@@ -104,6 +124,7 @@ class TestCloseRelease:
         assert result_status is None
 
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
+        self._assert_release_has_start_and_end_date(None, None)
 
     def test_output_with_broken_json_does_not_break_release(self, scm_pipeline_run,
                                                             scm_step_run_with_broken_output):
@@ -114,3 +135,4 @@ class TestCloseRelease:
         assert result_status == constants.PIPELINE_STATUS_SUCCESS
 
         self._assert_release_success_with_name("1.0.0")
+        self._assert_release_has_start_and_end_date("2018-11-11 08:45:30+00:00", "2018-11-11 09:15:41+00:00")

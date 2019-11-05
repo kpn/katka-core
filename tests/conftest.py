@@ -349,7 +349,7 @@ def deactivated_scm_pipeline_run(scm_pipeline_run):
 def scm_step_run(scm_pipeline_run):
     scm_step_run = models.SCMStepRun(slug='release', name='Release Katka', stage='Production',
                                      scm_pipeline_run=scm_pipeline_run, sequence_id='1.1-1',
-                                     started='2018-11-11 08:25:30', ended='2018-11-11 09:01:40')
+                                     started='2018-11-11 08:25:30+0000', ended='2018-11-11 09:01:40+0000')
 
     with username_on_model(models.SCMStepRun, 'initial'):
         scm_step_run.save()
@@ -450,13 +450,20 @@ def not_my_metadata(not_my_application):
 def step_data(scm_pipeline_run):
     version = '{"release.version": "1.0.0"}'
     steps = [
-        {"name": "step0", "stage": "prepare", "seq": "1.1-1", "status": "success", "tags": "", "output": version},
-        {"name": "step1", "stage": "prepare", "seq": "1.2-1", "status": "success", "tags": "", "output": ""},
-        {"name": "step2", "stage": "deploy", "seq": "2.1-1", "status": "success", "tags": "", "output": ""},
-        {"name": "step3", "stage": "deploy", "seq": "2.2-1", "status": "success", "tags": "", "output": ""},
-        {"name": "step4", "stage": "deploy", "seq": "2.3-1", "status": "success", "tags": "", "output": ""},
-        {"name": "step5", "stage": "deploy", "seq": "2.4-1", "status": "success", "tags": "", "output": ""},
-        {"name": "step6", "stage": "deploy", "seq": "2.5-1", "status": "success", "tags": "", "output": ""},
+        {"name": "step0", "stage": "prepare", "seq": "1.1-1", "status": "success", "tags": "", "output": version,
+         "started": "2018-11-11 08:25:30+0000", "ended": "2018-11-11 08:25:41+0000"},
+        {"name": "step1", "stage": "prepare", "seq": "1.2-1", "status": "success", "tags": "", "output": "",
+         "started": "2018-11-11 08:35:30+0000", "ended": "2018-11-11 08:35:41+0000"},
+        {"name": "step2", "stage": "deploy", "seq": "2.1-1", "status": "success", "tags": "", "output": "",
+         "started": "2018-11-11 08:45:30+0000", "ended": "2018-11-11 08:45:41+0000"},
+        {"name": "step3", "stage": "deploy", "seq": "2.2-1", "status": "success", "tags": "", "output": "",
+         "started": "2018-11-11 08:55:30+0000", "ended": "2018-11-11 08:55:41+0000"},
+        {"name": "step4", "stage": "deploy", "seq": "2.3-1", "status": "success", "tags": "", "output": "",
+         "started": "2018-11-11 09:05:30+0000", "ended": "2018-11-11 09:05:41+0000"},
+        {"name": "step5", "stage": "deploy", "seq": "2.4-1", "status": "success", "tags": "", "output": "",
+         "started": "2018-11-11 09:15:30+0000", "ended": "2018-11-11 09:15:41+0000"},
+        {"name": "step6", "stage": "deploy", "seq": "2.5-1", "status": "success", "tags": "", "output": "",
+         "started": "2018-11-11 09:25:30+0000", "ended": "2018-11-11 09:25:41+0000"},
     ]
     return steps
 
@@ -466,7 +473,8 @@ def _create_steps_from_dict(scm_pipeline_run, step_data):
     for step in step_data:
         scm_step_run = models.SCMStepRun(slug=step["name"], name=step["name"], stage=step["stage"],
                                          scm_pipeline_run=scm_pipeline_run, sequence_id=step["seq"],
-                                         status=step["status"], tags=step["tags"], output=step["output"])
+                                         status=step["status"], tags=step["tags"], output=step["output"],
+                                         started=step["started"], ended=step["ended"])
 
         with username_on_model(models.SCMStepRun, 'initial'):
             scm_step_run.save()
