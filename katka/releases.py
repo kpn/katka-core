@@ -62,8 +62,8 @@ def close_release_if_pipeline_finished(pipeline: SCMPipelineRun):
     with username_on_model(SCMRelease, pipeline.modified_username):
         if release:
             release.name = pre_conditions.version_number
-            release.started = pre_conditions.prod_change_start_date
-            release.ended = pre_conditions.prod_change_end_date
+            release.started_at = pre_conditions.prod_change_start_date
+            release.ended_at = pre_conditions.prod_change_end_date
             release.save()
 
     return release.status if release else None
@@ -80,13 +80,13 @@ def _gather_steps_pre_conditions(pipeline):
             continue
         _add_output(pipeline_output=pipeline_output, step_output=step.output)
         if constants.TAG_PRODUCTION_CHANGE_STARTED in step.tags.split(" "):
-            prod_start_date = step.started
+            prod_start_date = step.started_at
 
         if prod_start_date is not None:
             success_status_between_start_end.append(step.status == constants.STEP_STATUS_SUCCESS)
 
         if constants.TAG_PRODUCTION_CHANGE_ENDED in step.tags.split(" "):
-            prod_end_date = step.ended
+            prod_end_date = step.ended_at
             break
 
     return StepsPreConditions(pipeline_output.get("release.version"),
@@ -113,7 +113,7 @@ def _get_current_release(pipeline):
         log.error(f'No open releases found for application {pipeline.application.pk}')
     elif len(releases) > 1:
         log.error(f'Multiple open releases found for application {pipeline.application.pk}, picking newest')
-        release = releases.order_by('-created').first()
+        release = releases.order_by('-created_at').first()
     else:
         release = releases[0]
     return release

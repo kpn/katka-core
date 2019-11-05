@@ -183,7 +183,7 @@ class TestReleaseSignal:
             open_release_2.scm_pipeline_runs.add(scm_pipeline_run)
             open_release_2.save()
 
-        assert scm_release.created < open_release_2.created
+        assert scm_release.created_at < open_release_2.created_at
 
         with override_settings(**overrides), username_on_model(SCMPipelineRun, 'signal_tester'):
             pipeline_run = SCMPipelineRun.objects.create(application=application)

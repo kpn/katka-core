@@ -58,8 +58,8 @@ class SCMPipelineRunAdmin(WithUsernameAdminModel):
 
 @admin.register(SCMStepRun)
 class SCMStepRunAdmin(WithUsernameAdminModel):
-    fields = ('slug', 'name', 'stage', 'status', 'output', 'started', 'ended', 'scm_pipeline_run')
-    list_display = ('pk', 'scm_pipeline_run', 'name', 'stage', 'status', 'started', 'ended')
+    fields = ('slug', 'name', 'stage', 'status', 'output', 'started_at', 'ended_at', 'scm_pipeline_run')
+    list_display = ('pk', 'scm_pipeline_run', 'name', 'stage', 'status', 'started_at', 'ended_at')
     list_filter = ('scm_pipeline_run__application__name',)
 
 
@@ -71,5 +71,5 @@ class ApplicationMetadataAdmin(WithUsernameAdminModel):
 
 @admin.register(SCMRelease)
 class SCMReleaseAdmin(WithUsernameAdminModel):
-    fields = ('name', 'status', 'started', 'ended', 'scm_pipeline_runs')
+    fields = ('name', 'status', 'started_at', 'ended_at', 'scm_pipeline_runs')
     list_display = ('pk', 'name')

@@ -107,7 +107,7 @@ class SCMStepRunSerializer(KatkaSerializer):
         model = SCMStepRun
         fields = (
             'public_identifier', 'slug', 'name', 'stage', 'status', 'output', 'sequence_id', 'scm_pipeline_run',
-            'tags', 'started', 'ended'
+            'tags', 'started_at', 'ended_at'
         )
 
 
@@ -132,8 +132,8 @@ class SCMReleaseSerializer(KatkaSerializer):
 
     class Meta:
         model = SCMRelease
-        fields = ('public_identifier', 'name', 'started', 'ended', 'scm_pipeline_runs', 'status')
-        read_only_fields = ('started', 'ended', 'scm_pipeline_runs')
+        fields = ('public_identifier', 'name', 'started_at', 'ended_at', 'scm_pipeline_runs', 'status')
+        read_only_fields = ('started_at', 'ended_at', 'scm_pipeline_runs')
 
 
 class SCMReleaseCreateSerializer(KatkaSerializer):

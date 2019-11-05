@@ -139,8 +139,8 @@ class SCMStepRun(AuditedModel):
     # This allows easy sorting for e.g. frontends.
     scm_pipeline_run = models.ForeignKey(SCMPipelineRun, on_delete=models.PROTECT)
     tags = models.TextField(blank=True)
-    started = models.DateTimeField(blank=True, null=True)
-    ended = models.DateTimeField(blank=True, null=True)
+    started_at = models.DateTimeField(blank=True, null=True)
+    ended_at = models.DateTimeField(blank=True, null=True)
 
 
 # SCM Releases, comprises a range of commits that are released
@@ -152,8 +152,8 @@ class SCMRelease(AuditedModel):
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     status = models.CharField(max_length=30, choices=RELEASE_STATUS_CHOICES, default=RELEASE_STATUS_IN_PROGRESS)
-    started = models.DateTimeField(null=True)
-    ended = models.DateTimeField(null=True)
+    started_at = models.DateTimeField(null=True)
+    ended_at = models.DateTimeField(null=True)
     scm_pipeline_runs = models.ManyToManyField(SCMPipelineRun)
 
 
