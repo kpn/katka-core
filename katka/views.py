@@ -84,6 +84,11 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
     model = SCMPipelineRun
     serializer_class = SCMPipelineRunSerializer
 
+    parameter_lookup_map = {
+        'scmrelease': 'scmrelease',
+        'release': 'scmrelease',
+    }
+
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
         return super().get_queryset().filter(application__project__team__group__in=user_groups)
@@ -112,6 +117,10 @@ class SCMStepRunUpdateStatusView(UpdateAuditMixin):
 class SCMReleaseViewSet(FilterViewMixin, ReadOnlyAuditViewMixin):
     model = SCMRelease
     serializer_class = SCMReleaseSerializer
+
+    parameter_lookup_map = {
+        'application': 'scm_pipeline_runs__application'
+    }
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
