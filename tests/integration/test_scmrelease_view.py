@@ -79,6 +79,38 @@ class TestSCMReleaseViewSet:
         assert len(parsed[0]['scm_pipeline_runs']) == 1
         assert UUID(parsed[0]['scm_pipeline_runs'][0]) == another_scm_pipeline_run.public_identifier
 
+    def test_filter_by_application(self, client, logged_in_user, scm_pipeline_run, scm_release,
+                                   another_scm_pipeline_run, another_scm_release, another_application):
+        response = client.get('/scm-releases/'
+                              f'?application={str(another_application.public_identifier)}')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]['name'] == 'Version 15.0'
+        assert parsed[0]['started_at'] is None
+        assert parsed[0]['ended_at'] is None
+        assert parsed[0]['status'] == 'in progress'
+        assert len(parsed[0]['scm_pipeline_runs']) == 1
+        assert UUID(parsed[0]['scm_pipeline_runs'][0]) == another_scm_pipeline_run.public_identifier
+
+    def test_filter_by_application_multiple_pipeline_runs(self, client, logged_in_user, scm_pipeline_run, scm_release,
+                                                          another_scm_pipeline_run, another_scm_release,
+                                                          another_another_scm_pipeline_run, another_application):
+        response = client.get('/scm-releases/'
+                              f'?application={str(another_application.public_identifier)}')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]['name'] == 'Version 15.0'
+        assert parsed[0]['started_at'] is None
+        assert parsed[0]['ended_at'] is None
+        assert parsed[0]['status'] == 'in progress'
+        assert len(parsed[0]['scm_pipeline_runs']) == 2
+        assert UUID(parsed[0]['scm_pipeline_runs'][0]) in [another_scm_pipeline_run.public_identifier,
+                                                           another_another_scm_pipeline_run.public_identifier]
+        assert UUID(parsed[0]['scm_pipeline_runs'][1]) in [another_scm_pipeline_run.public_identifier,
+                                                           another_another_scm_pipeline_run.public_identifier]
+
     def test_filtered_list_non_existing_pipeline_run(self, client, logged_in_user, scm_pipeline_run, scm_release,
                                                      another_scm_pipeline_run, another_scm_release):
 

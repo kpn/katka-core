@@ -56,7 +56,7 @@ class TestSCMPipelineRunViewSetUnauthenticated:
 @pytest.mark.django_db
 class TestSCMPipelineRunViewSet:
 
-    def test_list(self, client, logged_in_user, application, scm_pipeline_run):
+    def test_list(self, client, logged_in_user, application, scm_pipeline_run, scm_release):
         response = client.get('/scm-pipeline-runs/')
         assert response.status_code == 200
         parsed = response.json()
@@ -64,9 +64,10 @@ class TestSCMPipelineRunViewSet:
         assert parsed[0]['commit_hash'] == '4015B57A143AEC5156FD1444A017A32137A3FD0F'
         assert UUID(parsed[0]['application']) == application.public_identifier
         UUID(parsed[0]['public_identifier'])  # should not raise
+        assert len(parsed[0]['scmrelease_set']) == 1
 
     def test_filtered_list(self, client, logged_in_user, application, scm_pipeline_run,
-                           another_application, another_scm_pipeline_run):
+                           another_application, another_scm_pipeline_run, scm_release, another_scm_release):
 
         response = client.get('/scm-pipeline-runs/?application=' + str(another_application.public_identifier))
         assert response.status_code == 200
@@ -75,6 +76,44 @@ class TestSCMPipelineRunViewSet:
         assert parsed[0]['commit_hash'] == '1234567A143AEC5156FD1444A017A3213654321'
         assert UUID(parsed[0]['application']) == another_application.public_identifier
         assert UUID(parsed[0]['public_identifier']) == another_scm_pipeline_run.public_identifier
+        assert len(parsed[0]['scmrelease_set']) == 1
+
+    def test_filtered_by_scmrelease(self, client, logged_in_user, application, scm_pipeline_run, scm_release,
+                                    another_application, another_scm_pipeline_run, another_scm_release):
+
+        response = client.get('/scm-pipeline-runs/?scmrelease=' + str(another_scm_release.public_identifier))
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]['commit_hash'] == '1234567A143AEC5156FD1444A017A3213654321'
+        assert UUID(parsed[0]['application']) == another_application.public_identifier
+        assert UUID(parsed[0]['public_identifier']) == another_scm_pipeline_run.public_identifier
+        assert len(parsed[0]['scmrelease_set']) == 1
+
+    def test_filtered_by_release(self, client, logged_in_user, application, scm_pipeline_run, scm_release,
+                                 another_application, another_scm_pipeline_run, another_scm_release):
+
+        response = client.get('/scm-pipeline-runs/?release=' + str(another_scm_release.public_identifier))
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]['commit_hash'] == '1234567A143AEC5156FD1444A017A3213654321'
+        assert UUID(parsed[0]['application']) == another_application.public_identifier
+        assert UUID(parsed[0]['public_identifier']) == another_scm_pipeline_run.public_identifier
+        assert len(parsed[0]['scmrelease_set']) == 1
+
+    def test_filtered_by_release_over_scmrelease(self, client, logged_in_user, application, scm_pipeline_run,
+                                                 scm_release, another_application, another_scm_pipeline_run,
+                                                 another_scm_release):
+        response = client.get('/scm-pipeline-runs/?release=' + str(another_scm_release.public_identifier)
+                              + '&scmrelease=dummy')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]['commit_hash'] == '1234567A143AEC5156FD1444A017A3213654321'
+        assert UUID(parsed[0]['application']) == another_application.public_identifier
+        assert UUID(parsed[0]['public_identifier']) == another_scm_pipeline_run.public_identifier
+        assert len(parsed[0]['scmrelease_set']) == 1
 
     def test_filtered_list_non_existing_application(self, client, logged_in_user, application, scm_pipeline_run,
                                                     another_application, another_scm_pipeline_run):

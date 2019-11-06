@@ -337,6 +337,24 @@ do-release:
 
 
 @pytest.fixture
+def another_another_scm_pipeline_run(another_application):
+    pipeline_yaml = '''stages:
+  - release
+
+do-release:
+  stage: release
+'''
+    scm_pipeline_run = models.SCMPipelineRun(application=another_application,
+                                             pipeline_yaml=pipeline_yaml,
+                                             steps_total=5,
+                                             commit_hash='9234567A143AEC5156FD1444A017A3213654329')
+    with username_on_model(models.SCMPipelineRun, 'initial'):
+        scm_pipeline_run.save()
+
+    return scm_pipeline_run
+
+
+@pytest.fixture
 def deactivated_scm_pipeline_run(scm_pipeline_run):
     scm_pipeline_run.deleted = True
     with username_on_model(models.SCMPipelineRun, 'initial'):

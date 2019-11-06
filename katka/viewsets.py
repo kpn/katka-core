@@ -40,19 +40,34 @@ class AuditViewSet(mixins.CreateModelMixin,
 
 
 class FilterViewMixin:
+    parameter_lookup_map = None
+
     """
     Uses the Serializer fields to construct GET Parameter filtering
     """
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        related_fields = self.serializer_class.get_related_fields()
+        # Fetch distinct for all model fields, to prevent duplications due to SQL Joins
+        queryset = queryset.distinct()
 
+        # Allow filtering on related fields in serializer
+        related_fields = self.serializer_class.get_related_fields()
+        filter_fields_lookup = {field: field for field in related_fields}
+        filter_fields_keys = [field for field in related_fields]
+
+        # Also support a mapping from query parameter to django query field
+        if self.parameter_lookup_map:
+            filter_fields_keys += self.parameter_lookup_map.keys()
+            filter_fields_lookup.update(self.parameter_lookup_map)
+
+        # Loop through the keys to maintain proper order
         filters = {}
-        for param in related_fields:
-            value = self.request.query_params.get(param, None)
+        for query_param in filter_fields_keys:
+            django_lookup_field = filter_fields_lookup[query_param]
+            value = self.request.query_params.get(query_param, None)
             if value is not None:
-                filters[param] = value
+                filters[django_lookup_field] = value
 
         if filters:
             queryset = queryset.filter(**filters)
