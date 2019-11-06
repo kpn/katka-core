@@ -1,3 +1,9 @@
+from datetime import datetime
+
+from django.conf import settings
+
+import pytz
+from katka.constants import STEP_FINAL_STATUSES
 from katka.models import (
     Application, ApplicationMetadata, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRelease, SCMRepository,
     SCMService, SCMStepRun, Team,
@@ -94,9 +100,22 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
         return super().get_queryset().filter(application__project__team__group__in=user_groups)
 
 
+def pre_validate_steprun_update(serializer):
+    """In case of an update to the status which sets the step to a final status, ensure the 'ended_at'
+       field is set.
+    """
+    if 'status' in serializer.validated_data and serializer.validated_data['status'] in STEP_FINAL_STATUSES \
+            and 'ended_at' not in serializer.validated_data:
+        serializer.validated_data['ended_at'] = datetime.now(tz=pytz.timezone(settings.TIME_ZONE))
+
+
 class SCMStepRunViewSet(FilterViewMixin, AuditViewSet):
     model = SCMStepRun
     serializer_class = SCMStepRunSerializer
+
+    def perform_update(self, serializer):
+        pre_validate_steprun_update(serializer)
+        serializer.save()
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
@@ -106,6 +125,10 @@ class SCMStepRunViewSet(FilterViewMixin, AuditViewSet):
 class SCMStepRunUpdateStatusView(UpdateAuditMixin):
     model = SCMStepRun
     serializer_class = SCMStepRunUpdateSerializer
+
+    def perform_update(self, serializer):
+        pre_validate_steprun_update(serializer)
+        serializer.save()
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
