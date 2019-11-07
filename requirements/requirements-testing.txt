@@ -8,3 +8,4 @@ readme_renderer[md]
 twine
 setuptools
 wheel
+freezegun

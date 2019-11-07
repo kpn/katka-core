@@ -120,7 +120,7 @@ class SCMStepRunUpdateSerializer(KatkaSerializer):
     class Meta:
         model = SCMStepRun
         fields = (
-            'public_identifier', 'status'
+            'public_identifier', 'status', 'ended_at'
         )
 
     def __init__(self, *args, **kwargs):

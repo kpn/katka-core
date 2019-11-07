@@ -136,6 +136,21 @@ class TestSCMReleaseViewSet:
         assert len(parsed['scm_pipeline_runs']) == 1
         assert UUID(parsed['scm_pipeline_runs'][0]) == scm_pipeline_run.public_identifier
 
+    def test_get_with_multiple_pipeline_runs(self, client, logged_in_user, another_scm_pipeline_run,
+                                             another_another_scm_pipeline_run, another_scm_release):
+        response = client.get(f'/scm-releases/{another_scm_release.public_identifier}/')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert parsed['name'] == 'Version 15.0'
+        assert parsed['started_at'] is None
+        assert parsed['ended_at'] is None
+        assert parsed['status'] == 'in progress'
+        assert len(parsed['scm_pipeline_runs']) == 2
+        assert UUID(parsed['scm_pipeline_runs'][0]) in [another_scm_pipeline_run.public_identifier,
+                                                        another_another_scm_pipeline_run.public_identifier]
+        assert UUID(parsed['scm_pipeline_runs'][1]) in [another_scm_pipeline_run.public_identifier,
+                                                        another_another_scm_pipeline_run.public_identifier]
+
     def test_get_excludes_inactive(self, client, logged_in_user, deactivated_scm_release):
         response = client.get(f'/scm-releases/{deactivated_scm_release.public_identifier}/')
         assert response.status_code == 404

@@ -1,4 +1,7 @@
+from django.utils.dateparse import parse_datetime
+
 import pytest
+from freezegun import freeze_time
 from katka import models
 
 
@@ -42,3 +45,43 @@ class TestUpdateStatusSCMStepRunView:
         data = {'status': 'success'}
         response = client.patch(url, data, content_type='application/json')
         assert response.status_code == 404
+
+    def test_partial_update_without_ended_at_sets_ended_at(self, client, logged_in_user, another_scm_step_run):
+        url = f'/update-scm-step-run/{another_scm_step_run.public_identifier}/'
+
+        p = models.SCMStepRun.objects.get(pk=another_scm_step_run.public_identifier)
+        assert p.ended_at is None
+
+        with freeze_time("2019-05-04 11:13:14"):
+            data = {'status': 'success'}
+            response = client.patch(url, data, content_type='application/json')
+
+        assert response.status_code == 200
+        p = models.SCMStepRun.objects.get(pk=another_scm_step_run.public_identifier)
+        assert p.status == 'success'
+        assert p.ended_at == parse_datetime('2019-05-04T11:13:14+0000')
+
+    def test_partial_update_without_ended_not_sets_ended_at_if_not_final(self, client, logged_in_user,
+                                                                         another_scm_step_run):
+        url = f'/update-scm-step-run/{another_scm_step_run.public_identifier}/'
+
+        p = models.SCMStepRun.objects.get(pk=another_scm_step_run.public_identifier)
+        assert p.ended_at is None
+
+        with freeze_time("2019-05-04 11:13:14.123"):
+            data = {'status': 'in progress'}
+            response = client.patch(url, data, content_type='application/json')
+
+        assert response.status_code == 200
+        p = models.SCMStepRun.objects.get(pk=another_scm_step_run.public_identifier)
+        assert p.status == 'in progress'
+        assert p.ended_at is None
+
+    def test_partial_update_with_ended_at(self, client, logged_in_user, scm_step_run):
+        url = f'/update-scm-step-run/{scm_step_run.public_identifier}/'
+        data = {'status': 'success', 'ended_at': '2019-01-02T11:12:13+0000'}
+        response = client.patch(url, data, content_type='application/json')
+        assert response.status_code == 200
+        p = models.SCMStepRun.objects.get(pk=scm_step_run.public_identifier)
+        assert p.status == 'success'
+        assert p.ended_at == parse_datetime('2019-01-02T11:12:13+0000')
