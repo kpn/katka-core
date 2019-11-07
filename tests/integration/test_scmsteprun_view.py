@@ -116,6 +116,7 @@ class TestSCMStepRunViewSet:
         assert parsed['stage'] == 'Production'
         assert parsed['status'] == 'not started'
         assert parsed['output'] == ''
+        assert parsed['step_type'] == 'type'
         assert parsed['sequence_id'] == '1.1-1'
         assert parsed['tags'] == ''
         assert parsed['started_at'] == '2018-11-11T08:25:30Z'
@@ -139,6 +140,7 @@ class TestSCMStepRunViewSet:
                 'name': 'Release product',
                 'stage': 'Production',
                 'status': 'success',
+                'step_type': 'type1',
                 'output': 'Command completed',
                 'sequence_id': '01.02-03',
                 'tags': 'tag1 tag2',
@@ -151,6 +153,7 @@ class TestSCMStepRunViewSet:
         assert p.name == 'Release product'
         assert p.sequence_id == '01.02-03'
         assert p.tags == 'tag1 tag2'
+        assert p.step_type == 'type1'
         assert p.started_at == parse_datetime('2019-01-25T01:02:03+0100')
         assert p.ended_at == parse_datetime('2019-02-13T02:03:04Z')
 
@@ -185,6 +188,7 @@ class TestSCMStepRunViewSet:
         url = f'/scm-step-runs/'
         data = {'slug': 'release',
                 'name': 'Release product',
+                'step_type': 'type1',
                 'stage': 'Production',
                 'status': 'not started',
                 'scm_pipeline_run': scm_pipeline_run.public_identifier}
