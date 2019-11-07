@@ -107,8 +107,8 @@ class SCMStepRunSerializer(KatkaSerializer):
     class Meta:
         model = SCMStepRun
         fields = (
-            'public_identifier', 'slug', 'name', 'stage', 'status', 'output', 'sequence_id', 'scm_pipeline_run',
-            'tags', 'started_at', 'ended_at'
+            'public_identifier', 'step_type', 'slug', 'name', 'stage', 'status', 'output', 'sequence_id',
+            'scm_pipeline_run', 'tags', 'started_at', 'ended_at'
         )
 
 

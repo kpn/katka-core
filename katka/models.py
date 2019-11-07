@@ -119,6 +119,7 @@ class SCMStepRun(AuditedModel):
         verbose_name = 'SCM step'
         verbose_name_plural = 'SCM steps'
 
+    step_type = models.CharField(max_length=100, null=True)
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     slug = KatkaSlugField(max_length=30)
     name = models.CharField(max_length=100)
