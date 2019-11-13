@@ -8,6 +8,7 @@ from katka.constants import PIPELINE_STATUS_INITIALIZING, STEP_FINAL_STATUSES
 from katka.fields import username_on_model
 from katka.models import SCMPipelineRun, SCMStepRun
 from katka.releases import close_release_if_pipeline_finished, create_release_if_necessary
+from requests import HTTPError
 
 log = logging.getLogger('katka')
 
@@ -48,6 +49,11 @@ def send_pipeline_change_notification(sender, **kwargs):
         return
 
     session = settings.PIPELINE_CHANGE_NOTIFICATION_SESSION
-    session.post(
+    response = session.post(
         settings.PIPELINE_CHANGE_NOTIFICATION_URL, json={'public_identifier': str(pipeline.public_identifier)}
     )
+
+    try:
+        response.raise_for_status()
+    except HTTPError:
+        log.exception("Failed to notify pipeline runner")
