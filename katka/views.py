@@ -1,9 +1,13 @@
+import logging
 from datetime import datetime
 
 from django.conf import settings
 
 import pytz
-from katka.constants import STEP_FINAL_STATUSES
+from katka.constants import (
+    PIPELINE_FINAL_STATUSES, PIPELINE_STATUS_IN_PROGRESS, PIPELINE_STATUS_INITIALIZING, PIPELINE_STATUS_QUEUED,
+    STEP_FINAL_STATUSES,
+)
 from katka.models import (
     Application, ApplicationMetadata, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRelease, SCMRepository,
     SCMService, SCMStepRun, Team,
@@ -15,6 +19,8 @@ from katka.serializers import (
 )
 from katka.viewsets import AuditViewSet, FilterViewMixin, ReadOnlyAuditViewMixin, UpdateAuditMixin
 from rest_framework.permissions import IsAuthenticated
+
+log = logging.getLogger(__name__)
 
 
 class TeamViewSet(FilterViewMixin, AuditViewSet):
@@ -94,6 +100,57 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
         'scmrelease': 'scmrelease',
         'release': 'scmrelease',
     }
+
+    def perform_update(self, serializer):
+        status = serializer.validated_data.get('status', None)
+        if status == PIPELINE_STATUS_IN_PROGRESS:
+            if not self._ready_to_run(serializer.instance.application, serializer.instance.first_parent_hash):
+                serializer.validated_data['status'] = PIPELINE_STATUS_QUEUED
+
+        super().perform_update(serializer)
+
+        if status in PIPELINE_FINAL_STATUSES:
+            self._run_next_pipeline_if_available(serializer.instance.application, serializer.instance.commit_hash)
+
+    def _ready_to_run(self, application, parent_hash):
+        if parent_hash is None:
+            return True  # this is probably the first commit
+
+        try:
+            parent_instance = self.model.objects.get(application=application, commit_hash=parent_hash)
+        except self.model.DoesNotExist:
+            self._trigger_sync()
+            return False  # parent commit does not exist, we need a sync before we can continue
+
+        if parent_instance.status not in PIPELINE_FINAL_STATUSES:
+            return False  # exists, but not ready to run this one yet
+
+        return True
+
+    def _run_next_pipeline_if_available(self, application, commit_hash):
+        try:
+            next_pipeline = self.model.objects.get(application=application, first_parent_hash=commit_hash)
+        except self.model.DoesNotExist:
+            return  # does not exist (yet), so nothing to do
+
+        if next_pipeline.status != PIPELINE_STATUS_QUEUED:
+            if next_pipeline.status != PIPELINE_STATUS_INITIALIZING:
+                log.warning(
+                    f'Next pipeline {next_pipeline.pk} is not queued, it has status "{next_pipeline.status}", '
+                    'not updating'
+                )
+            return
+
+        # No need to wrap inside a "with username_on_model():" context manager since at this point we already
+        # are in a context. Worried about infinite recursion because we keep setting statuses for the next
+        # pipelines? Since this method is only called when a pipeline moves from the "in progress" state to
+        # a final state and the next pipeline is set to the "in progress" state, it should not trigger recursion.
+        next_pipeline.status = PIPELINE_STATUS_IN_PROGRESS
+        next_pipeline.save()
+
+    def _trigger_sync(self):
+        """We are missing commits, sync them so we can get the complete string of commits"""
+        log.warning("Need to sync commits because at least one is missing, but this is not implemented yet")
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()

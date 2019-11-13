@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from katka.constants import PIPELINE_STATUS_INITIALIZING, STEP_FINAL_STATUSES
+from katka.constants import PIPELINE_STATUS_INITIALIZING, PIPELINE_STATUS_QUEUED, STEP_FINAL_STATUSES
 from katka.fields import username_on_model
 from katka.models import SCMPipelineRun, SCMStepRun
 from katka.releases import close_release_if_pipeline_finished, create_release_if_necessary
@@ -35,17 +35,17 @@ def update_pipeline_from_steps(sender, **kwargs):
 @receiver(post_save, sender=SCMPipelineRun)
 def send_pipeline_change_notification(sender, **kwargs):
     pipeline = kwargs['instance']
-    if kwargs['created'] is True:
-        create_release_if_necessary(pipeline)
-    else:
-        close_release_if_pipeline_finished(pipeline)
-
     if pipeline.status == PIPELINE_STATUS_INITIALIZING and kwargs['created'] is False:
         # Do not send notifications when the pipeline is initializing. While initializing, steps are created and
         # since this is done with several requests, several notifications would be sent, while the only one you
         # care about is when all the steps are created and the status is changed to 'in progress'.
         # There is one exception though, a notify *should* be sent when the pipeline is first created, because
         # the notification will trigger the creation of the steps.
+        return
+
+    if pipeline.status == PIPELINE_STATUS_QUEUED:
+        # When a pipeline is queued it means that other pipelines should be run first. To prevent them from
+        # being run, do not notify.
         return
 
     session = settings.PIPELINE_CHANGE_NOTIFICATION_SESSION
@@ -57,3 +57,12 @@ def send_pipeline_change_notification(sender, **kwargs):
         response.raise_for_status()
     except HTTPError:
         log.exception("Failed to notify pipeline runner")
+
+
+@receiver(post_save, sender=SCMPipelineRun)
+def create_close_releases(sender, **kwargs):
+    pipeline = kwargs['instance']
+    if kwargs['created'] is True:
+        create_release_if_necessary(pipeline)
+    else:
+        close_release_if_pipeline_finished(pipeline)

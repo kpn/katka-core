@@ -2,6 +2,8 @@ from uuid import UUID
 
 import pytest
 from katka import models
+from katka.constants import PIPELINE_STATUS_FAILED
+from katka.fields import username_on_model
 
 
 @pytest.mark.django_db
@@ -183,3 +185,112 @@ do-release:
         assert response.status_code == 201
         assert models.SCMPipelineRun.objects.filter(commit_hash='4015B57A143AEC5156FD1444A017A32137A3FD0F').exists()
         assert models.SCMPipelineRun.objects.count() == initial_count + 1
+
+
+@pytest.mark.django_db
+class TestSCMPipelineRunQueueOrRun:
+    """
+    To make sure we process pipelines in order, we put pipeline runs in progress only when previous pipeline runs
+    have been completed (or skipped). These tests should verify that that functionality works correctly.
+    """
+
+    def test_first_commit(self, client, logged_in_user, application, scm_pipeline_run):
+        """There is no first parent commit hash, so we can change the status to in progress"""
+
+        url = f'/scm-pipeline-runs/{scm_pipeline_run.public_identifier}/'
+        data = {'status': 'in progress'}
+        response = client.patch(url, data, content_type='application/json')
+        assert response.status_code == 200
+        p = models.SCMPipelineRun.objects.get(pk=scm_pipeline_run.public_identifier)
+        assert p.status == 'in progress'
+
+    def test_linked_to_non_final(self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run):
+        """First parent is linked, but its status is not a final state"""
+
+        url = f'/scm-pipeline-runs/{next_scm_pipeline_run.public_identifier}/'
+        data = {'status': 'in progress'}
+        response = client.patch(url, data, content_type='application/json')
+        assert response.status_code == 200
+        p = models.SCMPipelineRun.objects.get(pk=next_scm_pipeline_run.public_identifier)
+        assert p.status == 'queued'
+
+    def test_not_linked_at_all(self, client, logged_in_user, application, scm_pipeline_run,
+                               another_another_scm_pipeline_run):
+        """
+        The first parent points to a commit that is not present, so a sync is necessary.
+        This pipeline run should be queued
+        """
+
+        url = f'/scm-pipeline-runs/{another_another_scm_pipeline_run.public_identifier}/'
+        data = {'status': 'in progress'}
+        response = client.patch(url, data, content_type='application/json')
+        assert response.status_code == 200
+        p = models.SCMPipelineRun.objects.get(pk=another_another_scm_pipeline_run.public_identifier)
+        assert p.status == 'queued'
+
+    def test_linked_to_final_state(self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run):
+        """First parent is linked, and its status is in a final state"""
+
+        scm_pipeline_run.status = PIPELINE_STATUS_FAILED
+        with username_on_model(models.SCMPipelineRun, 'test'):
+            scm_pipeline_run.save()
+
+        url = f'/scm-pipeline-runs/{next_scm_pipeline_run.public_identifier}/'
+        data = {'status': 'in progress'}
+        response = client.patch(url, data, content_type='application/json')
+        assert response.status_code == 200
+        p = models.SCMPipelineRun.objects.get(pk=next_scm_pipeline_run.public_identifier)
+        assert p.status == 'in progress'
+
+
+@pytest.mark.django_db
+class TestSCMPipelineRunRunNextPipeline:
+    """
+    To make sure we process pipelines in order, the next pipeline should be run if it's queued.
+    """
+
+    def test_still_initializing(self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run,
+                                caplog):
+        url = f'/scm-pipeline-runs/{scm_pipeline_run.public_identifier}/'
+        data = {'status': 'success'}
+        assert next_scm_pipeline_run.status == 'initializing'
+        response = client.patch(url, data, content_type='application/json')
+        assert response.status_code == 200
+        p = models.SCMPipelineRun.objects.get(pk=next_scm_pipeline_run.public_identifier)
+        assert p.status == 'initializing'
+        assert caplog.messages == []
+
+    def test_non_queued(self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run, caplog):
+        url = f'/scm-pipeline-runs/{scm_pipeline_run.public_identifier}/'
+        data = {'status': 'success'}
+        with username_on_model(models.SCMPipelineRun, 'test'):
+            next_scm_pipeline_run.status = 'in progress'
+            next_scm_pipeline_run.save()
+
+        response = client.patch(url, data, content_type='application/json')
+        assert response.status_code == 200
+        p = models.SCMPipelineRun.objects.get(pk=next_scm_pipeline_run.public_identifier)
+        assert p.status == 'in progress'
+        assert caplog.messages[0] == (f'Next pipeline {next_scm_pipeline_run.pk} is not queued, '
+                                      'it has status "in progress", not updating')
+
+    def test_queued(self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run, caplog):
+        url = f'/scm-pipeline-runs/{scm_pipeline_run.public_identifier}/'
+        data = {'status': 'success'}
+        with username_on_model(models.SCMPipelineRun, 'test'):
+            next_scm_pipeline_run.status = 'queued'
+            next_scm_pipeline_run.save()
+
+        response = client.patch(url, data, content_type='application/json')
+        assert response.status_code == 200
+        p = models.SCMPipelineRun.objects.get(pk=next_scm_pipeline_run.public_identifier)
+        assert p.status == 'in progress'
+        assert caplog.messages == []
+
+    def test_final_commit(self, client, logged_in_user, application, scm_pipeline_run, caplog):
+        url = f'/scm-pipeline-runs/{scm_pipeline_run.public_identifier}/'
+        data = {'status': 'success'}
+
+        response = client.patch(url, data, content_type='application/json')
+        assert response.status_code == 200
+        assert caplog.messages == []

@@ -107,6 +107,12 @@ class SCMPipelineRun(AuditedModel):
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     commit_hash = models.CharField(max_length=64)  # A SHA-1 hash is 40 characters, SHA-256 is 64 characters
+    first_parent_hash = models.CharField(
+        max_length=64,
+        help_text='Commit hash of first parent commit, to determine order of commits. First commit has none.',
+        null=True,
+        blank=True,
+    )
     status = models.CharField(max_length=30, choices=PIPELINE_STATUS_CHOICES, default=PIPELINE_STATUS_INITIALIZING)
     steps_total = models.PositiveSmallIntegerField(default=0)
     steps_completed = models.PositiveSmallIntegerField(default=0)
