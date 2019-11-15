@@ -51,9 +51,12 @@ class SCMRepositoryAdmin(WithUsernameAdminModel):
 
 @admin.register(SCMPipelineRun)
 class SCMPipelineRunAdmin(WithUsernameAdminModel):
-    fields = ('commit_hash', 'status', 'steps_total', 'steps_completed', 'pipeline_yaml', 'application')
-    list_display = ('pk', 'application', 'commit_hash')
+    fields = (
+        'commit_hash', 'first_parent_hash', 'status', 'steps_total', 'steps_completed', 'pipeline_yaml', 'application'
+    )
+    list_display = ('pk', 'application', 'commit_hash', 'first_parent_hash')
     list_filter = ('application__name',)
+    ordering = ('created_at', )
 
 
 @admin.register(SCMStepRun)
@@ -61,6 +64,7 @@ class SCMStepRunAdmin(WithUsernameAdminModel):
     fields = ('slug', 'name', 'stage', 'status', 'output', 'started_at', 'ended_at', 'scm_pipeline_run')
     list_display = ('pk', 'scm_pipeline_run', 'name', 'stage', 'status', 'started_at', 'ended_at')
     list_filter = ('scm_pipeline_run__application__name',)
+    ordering = ('created_at',)
 
 
 @admin.register(ApplicationMetadata)
@@ -73,3 +77,4 @@ class ApplicationMetadataAdmin(WithUsernameAdminModel):
 class SCMReleaseAdmin(WithUsernameAdminModel):
     fields = ('name', 'status', 'started_at', 'ended_at', 'scm_pipeline_runs')
     list_display = ('pk', 'name')
+    ordering = ('created_at',)
