@@ -104,6 +104,9 @@ class SCMPipelineRun(AuditedModel):
     class Meta:
         verbose_name = 'SCM pipeline'
         verbose_name_plural = 'SCM pipelines'
+        constraints = (
+            models.UniqueConstraint(fields=('commit_hash', 'application'), name='unique commits per application'),
+        )
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     commit_hash = models.CharField(max_length=64)  # A SHA-1 hash is 40 characters, SHA-256 is 64 characters
