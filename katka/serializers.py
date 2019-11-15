@@ -96,8 +96,8 @@ class SCMPipelineRunSerializer(KatkaSerializer):
 
     class Meta:
         model = SCMPipelineRun
-        fields = ('public_identifier', 'commit_hash', 'status', 'steps_total', 'steps_completed', 'pipeline_yaml',
-                  'application', 'scmrelease_set')
+        fields = ('public_identifier', 'commit_hash', 'first_parent_hash', 'status', 'steps_total', 'steps_completed',
+                  'pipeline_yaml', 'application', 'scmrelease_set')
         read_only_fields = ('scmrelease_set',)
 
 
