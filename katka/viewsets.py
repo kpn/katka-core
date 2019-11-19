@@ -51,10 +51,10 @@ class FilterViewMixin:
         # Fetch distinct for all model fields, to prevent duplications due to SQL Joins
         queryset = queryset.distinct()
 
-        # Allow filtering on related fields in serializer
-        related_fields = self.serializer_class.get_related_fields()
-        filter_fields_lookup = {field: field for field in related_fields}
-        filter_fields_keys = [field for field in related_fields]
+        # Allow filtering on any field in serializer
+        all_fields = self.serializer_class.Meta.fields
+        filter_fields_lookup = {field: field for field in all_fields}
+        filter_fields_keys = list(all_fields)
 
         # Also support a mapping from query parameter to django query field
         if self.parameter_lookup_map:

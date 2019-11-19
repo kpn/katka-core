@@ -14,13 +14,7 @@ from rest_framework.exceptions import PermissionDenied
 
 
 class KatkaSerializer(serializers.ModelSerializer):
-    @classmethod
-    def get_related_fields(cls):
-        """
-        Gets the fields that are declared in the Class declaration
-        These are the related fields (e.g. project for an application)
-        """
-        return cls._get_declared_fields([cls], {})
+    pass
 
 
 class TeamSerializer(KatkaSerializer):
