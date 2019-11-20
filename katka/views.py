@@ -11,6 +11,7 @@ from katka.constants import (
     PIPELINE_STATUS_QUEUED,
     STEP_FINAL_STATUSES,
 )
+from katka.exceptions import Conflict
 from katka.models import (
     Application,
     ApplicationMetadata,
@@ -122,31 +123,57 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
         "release": "scmrelease",
     }
 
+    def _can_create(self, application, parent_hash):
+        if parent_hash is None:
+            return True  # this is probably the first commit
+
+        try:
+            self.model.objects.get(application=application, commit_hash=parent_hash)
+        except self.model.DoesNotExist:
+            return False  # parent commit does not exist, we need a sync before we can continue
+
+        return True
+
+    def perform_create(self, serializer):
+        if not self._can_create(
+            serializer.validated_data["application"], serializer.validated_data.get("first_parent_hash")
+        ):
+            raise Conflict()
+        super().perform_create(serializer)
+
+    def _ready_to_run(self, pipeline_run):
+        if pipeline_run.first_parent_hash is None:
+            return True  # this is probably the first commit
+
+        try:
+            parent_instance = self.model.objects.get(
+                application=pipeline_run.application, commit_hash=pipeline_run.first_parent_hash
+            )
+        except self.model.DoesNotExist:
+            # parent commit does not exist, can't run. This should not happen since we are only creating pipeline runs
+            # with a defined parent commit
+            log.exception(
+                f"Parent pipeline run with hash {pipeline_run.first_parent_hash} could not "
+                f"be found for pipeline run {pipeline_run.public_identifier}. This should not be the case since "
+                f"pipeline runs with no parent are not added to the DB (exception being the initial commit)."
+            )
+            return False
+
+        if parent_instance.status not in PIPELINE_FINAL_STATUSES:
+            return False  # exists, but not ready to run this one yet
+
+        return True
+
     def perform_update(self, serializer):
         status = serializer.validated_data.get("status", None)
         if status == PIPELINE_STATUS_IN_PROGRESS:
-            if not self._ready_to_run(serializer.instance.application, serializer.instance.first_parent_hash):
+            if not self._ready_to_run(serializer.instance):
                 serializer.validated_data["status"] = PIPELINE_STATUS_QUEUED
 
         super().perform_update(serializer)
 
         if status in PIPELINE_FINAL_STATUSES:
             self._run_next_pipeline_if_available(serializer.instance.application, serializer.instance.commit_hash)
-
-    def _ready_to_run(self, application, parent_hash):
-        if parent_hash is None:
-            return True  # this is probably the first commit
-
-        try:
-            parent_instance = self.model.objects.get(application=application, commit_hash=parent_hash)
-        except self.model.DoesNotExist:
-            self._trigger_sync()
-            return False  # parent commit does not exist, we need a sync before we can continue
-
-        if parent_instance.status not in PIPELINE_FINAL_STATUSES:
-            return False  # exists, but not ready to run this one yet
-
-        return True
 
     def _run_next_pipeline_if_available(self, application, commit_hash):
         try:
@@ -168,10 +195,6 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
         # a final state and the next pipeline is set to the "in progress" state, it should not trigger recursion.
         next_pipeline.status = PIPELINE_STATUS_IN_PROGRESS
         next_pipeline.save()
-
-    def _trigger_sync(self):
-        """We are missing commits, sync them so we can get the complete string of commits"""
-        log.warning("Need to sync commits because at least one is missing, but this is not implemented yet")
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()

@@ -235,14 +235,27 @@ do-release:
         url = f"/scm-pipeline-runs/"
         data = {
             "commit_hash": "874AE57A143AEC5156FD1444A017A32137A3E34A",
-            "first_parent_hash": "F015B57A143AEC5156FD1444A017A32137A3FD01",
+            "first_parent_hash": "4015B57A143AEC5156FD1444A017A32137A3FD0F",
             "application": application.public_identifier,
         }
         response = client.post(url, data=data, content_type="application/json")
         assert response.status_code == 201
         assert models.SCMPipelineRun.objects.count() == initial_count + 1
         new_plr = models.SCMPipelineRun.objects.filter(commit_hash="874AE57A143AEC5156FD1444A017A32137A3E34A").first()
-        assert new_plr.first_parent_hash == "F015B57A143AEC5156FD1444A017A32137A3FD01"
+        assert new_plr.first_parent_hash == "4015B57A143AEC5156FD1444A017A32137A3FD0F"
+
+    def test_create_parent_commit_not_found(self, client, logged_in_user, application, scm_pipeline_run):
+        initial_count = models.SCMPipelineRun.objects.count()
+        url = f"/scm-pipeline-runs/"
+        data = {
+            "commit_hash": "874AE57A143AEC5156FD1444A017A32137A3E34A",
+            "first_parent_hash": "4015B57A143AEC5156FD1444A017A32137A3FD0G",
+            "application": application.public_identifier,
+        }
+        response = client.post(url, data=data, content_type="application/json")
+        assert response.status_code == 409
+        assert models.SCMPipelineRun.objects.count() == initial_count
+        assert not models.SCMPipelineRun.objects.filter(commit_hash="874AE57A143AEC5156FD1444A017A32137A3E34A").exists()
 
 
 @pytest.mark.django_db
@@ -273,7 +286,7 @@ class TestSCMPipelineRunQueueOrRun:
         assert p.status == "queued"
 
     def test_not_linked_at_all(
-        self, client, logged_in_user, application, scm_pipeline_run, another_another_scm_pipeline_run
+        self, client, logged_in_user, application, scm_pipeline_run, another_another_scm_pipeline_run, caplog
     ):
         """
         The first parent points to a commit that is not present, so a sync is necessary.
@@ -286,6 +299,8 @@ class TestSCMPipelineRunQueueOrRun:
         assert response.status_code == 200
         p = models.SCMPipelineRun.objects.get(pk=another_another_scm_pipeline_run.public_identifier)
         assert p.status == "queued"
+        assert str(another_another_scm_pipeline_run.public_identifier) in caplog.messages[0]
+        assert str(another_another_scm_pipeline_run.first_parent_hash) in caplog.messages[0]
 
     def test_linked_to_final_state(self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run):
         """First parent is linked, and its status is in a final state"""
