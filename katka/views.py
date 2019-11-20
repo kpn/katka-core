@@ -206,7 +206,7 @@ class SCMReleaseViewSet(FilterViewMixin, ReadOnlyAuditViewMixin):
         user_groups = self.request.user.groups.all()
         return super().get_queryset().filter(
             scm_pipeline_runs__application__project__team__group__in=user_groups
-        ).order_by("-created_at")
+        )
 
 
 class ApplicationMetadataViewSet(AuditViewSet):

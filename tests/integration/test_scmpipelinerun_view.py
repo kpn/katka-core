@@ -93,16 +93,18 @@ class TestSCMPipelineRunViewSet:
         assert len(parsed[0]['scmrelease_set']) == 1
 
     def test_filtered_by_release(self, client, logged_in_user, application, scm_pipeline_run, scm_release,
-                                 another_application, another_scm_pipeline_run, another_scm_release):
+                                 another_application, another_scm_pipeline_run, another_scm_release,
+                                 another_another_scm_pipeline_run):
 
         response = client.get('/scm-pipeline-runs/?release=' + str(another_scm_release.public_identifier))
         assert response.status_code == 200
         parsed = response.json()
-        assert len(parsed) == 1
-        assert parsed[0]['commit_hash'] == '1234567A143AEC5156FD1444A017A3213654321'
-        assert UUID(parsed[0]['application']) == another_application.public_identifier
-        assert UUID(parsed[0]['public_identifier']) == another_scm_pipeline_run.public_identifier
-        assert len(parsed[0]['scmrelease_set']) == 1
+        assert len(parsed) == 2
+        assert parsed[0]['commit_hash'] == another_another_scm_pipeline_run.commit_hash
+        assert parsed[1]['commit_hash'] == another_scm_pipeline_run.commit_hash
+        assert UUID(parsed[1]['application']) == another_application.public_identifier
+        assert UUID(parsed[1]['public_identifier']) == another_scm_pipeline_run.public_identifier
+        assert len(parsed[1]['scmrelease_set']) == 1
 
     def test_filtered_by_release_over_scmrelease(self, client, logged_in_user, application, scm_pipeline_run,
                                                  scm_release, another_application, another_scm_pipeline_run,

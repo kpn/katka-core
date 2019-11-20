@@ -107,6 +107,8 @@ class SCMPipelineRun(AuditedModel):
         constraints = (
             models.UniqueConstraint(fields=('commit_hash', 'application'), name='unique commits per application'),
         )
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['-created_at'])]
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     commit_hash = models.CharField(max_length=64)  # A SHA-1 hash is 40 characters, SHA-256 is 64 characters
@@ -158,6 +160,8 @@ class SCMRelease(AuditedModel):
     class Meta:
         verbose_name = 'SCM release'
         verbose_name_plural = 'SCM releases'
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['-created_at'])]
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
