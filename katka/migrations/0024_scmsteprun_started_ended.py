@@ -6,18 +6,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0023_auto_20191024_0825'),
+        ("katka", "0023_auto_20191024_0825"),
     ]
 
     operations = [
+        migrations.AddField(model_name="scmsteprun", name="ended", field=models.DateTimeField(blank=True, null=True),),
         migrations.AddField(
-            model_name='scmsteprun',
-            name='ended',
-            field=models.DateTimeField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='scmsteprun',
-            name='started',
-            field=models.DateTimeField(blank=True, null=True),
+            model_name="scmsteprun", name="started", field=models.DateTimeField(blank=True, null=True),
         ),
     ]

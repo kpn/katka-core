@@ -6,13 +6,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0025_datetime_field_names'),
+        ("katka", "0025_datetime_field_names"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='scmsteprun',
-            name='step_type',
-            field=models.CharField(max_length=100, null=True),
+            model_name="scmsteprun", name="step_type", field=models.CharField(max_length=100, null=True),
         ),
     ]

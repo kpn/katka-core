@@ -6,13 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0012_scmrelease'),
+        ("katka", "0012_scmrelease"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='scmsteprun',
-            name='status',
-            field=models.CharField(choices=[('not started', 'not started'), ('in progress', 'in progress'), ('waiting', 'waiting'), ('skipped', 'skipped'), ('failed', 'failed'), ('success', 'success')], default='in progress', max_length=30),
+            model_name="scmsteprun",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("not started", "not started"),
+                    ("in progress", "in progress"),
+                    ("waiting", "waiting"),
+                    ("skipped", "skipped"),
+                    ("failed", "failed"),
+                    ("success", "success"),
+                ],
+                default="in progress",
+                max_length=30,
+            ),
         ),
     ]

@@ -7,7 +7,7 @@ from katka import constants
 from katka.fields import username_on_model
 from katka.models import SCMPipelineRun, SCMRelease, SCMStepRun
 
-log = logging.getLogger('katka')
+log = logging.getLogger("katka")
 
 
 @dataclass
@@ -38,26 +38,26 @@ def create_release_if_necessary(pipeline):
 
 def close_release_if_pipeline_finished(pipeline: SCMPipelineRun):
     if pipeline.status not in constants.PIPELINE_FINAL_STATUSES:
-        log.debug(f'Pipeline {pipeline.public_identifier} not finished, doing nothing')
+        log.debug(f"Pipeline {pipeline.public_identifier} not finished, doing nothing")
         return None
 
     pre_conditions = _gather_steps_pre_conditions(pipeline)
     if not pre_conditions.start_and_finish_tags_were_executed:
-        log.debug(f'Pipeline {pipeline.public_identifier} missing start and/or finish tags')
+        log.debug(f"Pipeline {pipeline.public_identifier} missing start and/or finish tags")
         return None
 
     if not pre_conditions.version_number:
-        log.debug(f'Pipeline {pipeline.public_identifier} missing release version')
+        log.debug(f"Pipeline {pipeline.public_identifier} missing release version")
         return None
 
     release = _get_current_release(pipeline)
     if release and pre_conditions.all_status_between_start_and_finish_are_success:
         release.status = constants.RELEASE_STATUS_SUCCESS
     elif release:
-        log.debug(f'Pipeline {pipeline.public_identifier} contains step(s) with failed status')
+        log.debug(f"Pipeline {pipeline.public_identifier} contains step(s) with failed status")
         release.status = constants.RELEASE_STATUS_FAILED
     else:
-        log.warning(f'No open release for pipeline {pipeline.public_identifier}')
+        log.warning(f"No open release for pipeline {pipeline.public_identifier}")
 
     with username_on_model(SCMRelease, pipeline.modified_username):
         if release:
@@ -89,10 +89,12 @@ def _gather_steps_pre_conditions(pipeline):
             prod_end_date = step.ended_at
             break
 
-    return StepsPreConditions(pipeline_output.get("release.version"),
-                              success_status_between_start_end,
-                              prod_change_start_date=prod_start_date,
-                              prod_change_end_date=prod_end_date)
+    return StepsPreConditions(
+        pipeline_output.get("release.version"),
+        success_status_between_start_end,
+        prod_change_start_date=prod_start_date,
+        prod_change_end_date=prod_end_date,
+    )
 
 
 def _add_output(pipeline_output: dict, step_output: str) -> None:
@@ -110,10 +112,10 @@ def _get_current_release(pipeline):
     )
     release = None
     if len(releases) == 0:
-        log.error(f'No open releases found for application {pipeline.application.pk}')
+        log.error(f"No open releases found for application {pipeline.application.pk}")
     elif len(releases) > 1:
-        log.error(f'Multiple open releases found for application {pipeline.application.pk}, picking newest')
-        release = releases.order_by('-created_at').first()
+        log.error(f"Multiple open releases found for application {pipeline.application.pk}, picking newest")
+        release = releases.order_by("-created_at").first()
     else:
         release = releases[0]
     return release

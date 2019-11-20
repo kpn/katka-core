@@ -12,6 +12,9 @@ REQUIREMENTS_TXT:=requirements.txt
 
 PYTHON_VERSION=python3.7
 
+BLACK="black"
+FLAKE8="flake8"
+ISORT="isort"
 PIP="pip"
 TOX="tox"
 PYTHON="$(PYTHON_VERSION)"
@@ -19,6 +22,9 @@ TWINE="twine"
 
 # When we are not in Docker we assume virtualenv usage
 ifneq ($(IN_DOCKER), 1)
+  BLACK="venv/bin/black"
+  FLAKE8="venv/bin/flake8"
+  ISORT="venv/bin/isort"
   PIP="venv/bin/pip"
   TOX="venv/bin/tox"
   PYTHON="venv/bin/$(PYTHON_VERSION)"
@@ -29,16 +35,14 @@ MAKE_MIGRATIONS=`$(shell echo $(PYTHON)) manage.py makemigrations;`
 MIGRATIONS_CHECK=`echo $(MAKE_MIGRATIONS_OUTPUT) | awk '{print match($$0, "No changes detected")}'`
 
 
-.PHONY: clean pyclean test test_local check_forgotten_migrations migrate tox install_requirement_txt venv
-
-
 # ********** Cleaning **********
-
+.PHONY: pyclean
 pyclean:
 	@find . -name *.pyc -delete
 	@rm -rf *.egg-info build
 	@rm -rf coverage.xml .coverage
 
+.PHONY: clean
 clean: pyclean
 	@rm -rf venv
 	@rm -rf .tox
@@ -47,6 +51,7 @@ clean: pyclean
 # ********** Migrations **********
 
 # check if there is any forgotten migration
+.PHONY: check_forgotten_migrations
 check_forgotten_migrations: install_requirement_txt
 	$(eval MAKE_MIGRATIONS_OUTPUT:="$(shell echo $(MAKE_MIGRATIONS))")
 	@echo $(MAKE_MIGRATIONS_OUTPUT)
@@ -58,6 +63,7 @@ check_forgotten_migrations: install_requirement_txt
 	fi
 
 # migrate on dev environment
+.PHONY: migrate
 migrate:
 	$(PYTHON) manage.py migrate --noinput
 	@echo 'Done!'
@@ -90,22 +96,47 @@ docker/publish: docker/build
 
 # Used by the PR jobs. This target should include all tests necessary
 # to determine if the PR should be rejected or not.
+.PHONY: tox
 tox:
-	$(PIP) install tox
 	$(TOX)
 
-tox/%:
-	$(PIP) install tox
-	$(TOX) -e $*
+.PHONY: test
+test: docker/test_local
 
-test: docker/check_forgotten_migrations docker/tox
+.PHONY: test_local
+test_local: install_requirement_txt check_forgotten_migrations install_requirement_unittests lint tox
 	@echo 'tests done'
 
-test_local: venv check_forgotten_migrations tox
-	@echo 'tests done'
+# ********** Code style **********
+
+.PHONY: lint
+lint: lint/flake8 lint/isort lint/black
+
+.PHONY: lint/isort
+lint/isort:
+	$(ISORT) -rc -c katka tests
+
+.PHONY: lint/flake8
+lint/flake8:
+	$(FLAKE8) katka tests
+
+.PHONY: lint/black
+lint/black:
+	$(BLACK) --check katka tests
+
+.PHONY: format
+format: format/isort format/black
+
+.PHONY: format/isort
+format/isort:
+	$(ISORT) -rc katka tests
+
+.PHONY: format/black
+format/black:
+	$(BLACK) --verbose katka tests
 
 
-# ********** Packaging and destributing **********
+# ********** Packaging and distributing **********
 setup.py:
 	$(PYTHON) setup_gen.py
 	@echo 'setup.py created'
@@ -117,11 +148,17 @@ publish: setup.py
 
 
 # ********** Requirements **********
+.PHONY: install_requirement_txt
 install_requirement_txt:
 	@$(PIP) install -r $(REQUIREMENTS_TXT)
 
+.PHONY: install_requirement_unittests
+install_requirement_unittests:
+	$(PIP) install -r $(REQUIREMENTS_TEST)
+
 
 # ********** Virtual environment **********
+.PHONY: venv
 venv:
 	@rm -rf venv
 	@$(PYTHON_VERSION) -m venv venv

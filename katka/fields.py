@@ -51,9 +51,10 @@ class AutoUsernameField(models.CharField):
 
     For more information, see the 'username_on_model' context manager.
     """
+
     def __init__(self, *args, only_on_create=False, **kwargs):
-        if 'max_length' not in kwargs:
-            kwargs['max_length'] = 50
+        if "max_length" not in kwargs:
+            kwargs["max_length"] = 50
 
         self.only_on_create = only_on_create
         self._username = None
@@ -72,7 +73,7 @@ class AutoUsernameField(models.CharField):
             class_name = model_instance.__class__.__name__
             raise MissingUsername(
                 f'No username set. Make sure the username is set with the "username_on_model({class_name}, username)" '
-                'context manager'
+                "context manager"
             )
 
         if add or not self.only_on_create:

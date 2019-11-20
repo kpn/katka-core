@@ -11,17 +11,17 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AlwaysUpdate',
+            name="AlwaysUpdate",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('field', katka.fields.AutoUsernameField(max_length=50)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("field", katka.fields.AutoUsernameField(max_length=50)),
             ],
         ),
         migrations.CreateModel(
-            name='OnlyOnCreate',
+            name="OnlyOnCreate",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('field', katka.fields.AutoUsernameField(max_length=50)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("field", katka.fields.AutoUsernameField(max_length=50)),
             ],
         ),
     ]

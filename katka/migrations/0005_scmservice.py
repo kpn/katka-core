@@ -10,24 +10,30 @@ import katka.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0004_credential_secret'),
+        ("katka", "0004_credential_secret"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SCMService',
+            name="SCMService",
             fields=[
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('created_username', katka.fields.AutoUsernameField(max_length=50)),
-                ('modified', models.DateTimeField(auto_now=True)),
-                ('modified_username', katka.fields.AutoUsernameField(max_length=50)),
-                ('status', models.CharField(choices=[('active', 'active'), ('inactive', 'inactive')], default='active', max_length=50)),
-                ('public_identifier', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('type', models.CharField(max_length=48)),
-                ('server_url', models.URLField()),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("created_username", katka.fields.AutoUsernameField(max_length=50)),
+                ("modified", models.DateTimeField(auto_now=True)),
+                ("modified_username", katka.fields.AutoUsernameField(max_length=50)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("active", "active"), ("inactive", "inactive")], default="active", max_length=50
+                    ),
+                ),
+                (
+                    "public_identifier",
+                    models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False),
+                ),
+                ("type", models.CharField(max_length=48)),
+                ("server_url", models.URLField()),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False,},
         ),
     ]

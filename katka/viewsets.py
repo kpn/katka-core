@@ -4,9 +4,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 
-class ReadOnlyAuditViewMixin(mixins.RetrieveModelMixin,
-                             mixins.ListModelMixin,
-                             GenericViewSet):
+class ReadOnlyAuditViewMixin(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
     model = None
 
     def get_queryset(self):
@@ -14,17 +12,12 @@ class ReadOnlyAuditViewMixin(mixins.RetrieveModelMixin,
 
 
 class UpdateAuditMixin(mixins.UpdateModelMixin, GenericViewSet):
-
     def update(self, request, *args, **kwargs):
         with username_on_model(self.model, request.user.username):
             return super().update(request, *args, **kwargs)
 
 
-class AuditViewSet(mixins.CreateModelMixin,
-                   UpdateAuditMixin,
-                   mixins.DestroyModelMixin,
-                   ReadOnlyAuditViewMixin):
-
+class AuditViewSet(mixins.CreateModelMixin, UpdateAuditMixin, mixins.DestroyModelMixin, ReadOnlyAuditViewMixin):
     def create(self, request, *args, **kwargs):
         with username_on_model(self.model, request.user.username):
             return super().create(request, *args, **kwargs)
@@ -45,6 +38,7 @@ class FilterViewMixin:
     """
     Uses the Serializer fields to construct GET Parameter filtering
     """
+
     def get_queryset(self):
         queryset = super().get_queryset()
 

@@ -6,30 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0022_change_release_status_fields'),
+        ("katka", "0022_change_release_status_fields"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='scmrelease',
-            name='from_hash',
-        ),
-        migrations.RemoveField(
-            model_name='scmrelease',
-            name='released',
-        ),
-        migrations.RemoveField(
-            model_name='scmrelease',
-            name='to_hash',
-        ),
-        migrations.AddField(
-            model_name='scmrelease',
-            name='ended',
-            field=models.DateTimeField(null=True),
-        ),
-        migrations.AddField(
-            model_name='scmrelease',
-            name='started',
-            field=models.DateTimeField(null=True),
-        ),
+        migrations.RemoveField(model_name="scmrelease", name="from_hash",),
+        migrations.RemoveField(model_name="scmrelease", name="released",),
+        migrations.RemoveField(model_name="scmrelease", name="to_hash",),
+        migrations.AddField(model_name="scmrelease", name="ended", field=models.DateTimeField(null=True),),
+        migrations.AddField(model_name="scmrelease", name="started", field=models.DateTimeField(null=True),),
     ]

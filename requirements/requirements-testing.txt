@@ -1,11 +1,21 @@
-codecov
+# Code style
+isort
+flake8
+black
+
+# Tests
 tox
-mock
-pkgversion
-pytest-django
-pytest-cov
-readme_renderer[md]
-twine
-setuptools
-wheel
+codecov
 freezegun
+pytest
+pytest-cov
+pytest-django
+pluggy
+
+# Packaging
+pkgversion
+setuptools
+twine
+wheel
+
+readme_renderer[md]

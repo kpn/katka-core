@@ -5,17 +5,38 @@ from django.conf import settings
 
 import pytz
 from katka.constants import (
-    PIPELINE_FINAL_STATUSES, PIPELINE_STATUS_IN_PROGRESS, PIPELINE_STATUS_INITIALIZING, PIPELINE_STATUS_QUEUED,
+    PIPELINE_FINAL_STATUSES,
+    PIPELINE_STATUS_IN_PROGRESS,
+    PIPELINE_STATUS_INITIALIZING,
+    PIPELINE_STATUS_QUEUED,
     STEP_FINAL_STATUSES,
 )
 from katka.models import (
-    Application, ApplicationMetadata, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRelease, SCMRepository,
-    SCMService, SCMStepRun, Team,
+    Application,
+    ApplicationMetadata,
+    Credential,
+    CredentialSecret,
+    Project,
+    SCMPipelineRun,
+    SCMRelease,
+    SCMRepository,
+    SCMService,
+    SCMStepRun,
+    Team,
 )
 from katka.serializers import (
-    ApplicationMetadataSerializer, ApplicationSerializer, CredentialSecretSerializer, CredentialSerializer,
-    ProjectSerializer, SCMPipelineRunSerializer, SCMReleaseSerializer, SCMRepositorySerializer, SCMServiceSerializer,
-    SCMStepRunSerializer, SCMStepRunUpdateSerializer, TeamSerializer,
+    ApplicationMetadataSerializer,
+    ApplicationSerializer,
+    CredentialSecretSerializer,
+    CredentialSerializer,
+    ProjectSerializer,
+    SCMPipelineRunSerializer,
+    SCMReleaseSerializer,
+    SCMRepositorySerializer,
+    SCMServiceSerializer,
+    SCMStepRunSerializer,
+    SCMStepRunUpdateSerializer,
+    TeamSerializer,
 )
 from katka.viewsets import AuditViewSet, FilterViewMixin, ReadOnlyAuditViewMixin, UpdateAuditMixin
 from rest_framework.permissions import IsAuthenticated
@@ -26,8 +47,8 @@ log = logging.getLogger(__name__)
 class TeamViewSet(FilterViewMixin, AuditViewSet):
     model = Team
     serializer_class = TeamSerializer
-    lookup_field = 'public_identifier'
-    lookup_value_regex = '[0-9a-f-]{36}'
+    lookup_field = "public_identifier"
+    lookup_value_regex = "[0-9a-f-]{36}"
 
     def get_queryset(self):
         # Only show teams that are linked to a group that the user is part of
@@ -65,14 +86,14 @@ class CredentialViewSet(FilterViewMixin, AuditViewSet):
 class CredentialSecretsViewSet(AuditViewSet):
     model = CredentialSecret
     serializer_class = CredentialSecretSerializer
-    lookup_field = 'key'
+    lookup_field = "key"
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
         kwargs = {
-            'credential__team__group__in': user_groups,
-            'credential__deleted': False,
-            'credential': self.kwargs['credentials_pk'],
+            "credential__team__group__in": user_groups,
+            "credential__deleted": False,
+            "credential": self.kwargs["credentials_pk"],
         }
         return super().get_queryset().filter(**kwargs)
 
@@ -97,15 +118,15 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
     serializer_class = SCMPipelineRunSerializer
 
     parameter_lookup_map = {
-        'scmrelease': 'scmrelease',
-        'release': 'scmrelease',
+        "scmrelease": "scmrelease",
+        "release": "scmrelease",
     }
 
     def perform_update(self, serializer):
-        status = serializer.validated_data.get('status', None)
+        status = serializer.validated_data.get("status", None)
         if status == PIPELINE_STATUS_IN_PROGRESS:
             if not self._ready_to_run(serializer.instance.application, serializer.instance.first_parent_hash):
-                serializer.validated_data['status'] = PIPELINE_STATUS_QUEUED
+                serializer.validated_data["status"] = PIPELINE_STATUS_QUEUED
 
         super().perform_update(serializer)
 
@@ -137,7 +158,7 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
             if next_pipeline.status != PIPELINE_STATUS_INITIALIZING:
                 log.warning(
                     f'Next pipeline {next_pipeline.pk} is not queued, it has status "{next_pipeline.status}", '
-                    'not updating'
+                    "not updating"
                 )
             return
 
@@ -161,9 +182,12 @@ def pre_validate_steprun_update(serializer):
     """In case of an update to the status which sets the step to a final status, ensure the 'ended_at'
        field is set.
     """
-    if 'status' in serializer.validated_data and serializer.validated_data['status'] in STEP_FINAL_STATUSES \
-            and 'ended_at' not in serializer.validated_data:
-        serializer.validated_data['ended_at'] = datetime.now(tz=pytz.timezone(settings.TIME_ZONE))
+    if (
+        "status" in serializer.validated_data
+        and serializer.validated_data["status"] in STEP_FINAL_STATUSES
+        and "ended_at" not in serializer.validated_data
+    ):
+        serializer.validated_data["ended_at"] = datetime.now(tz=pytz.timezone(settings.TIME_ZONE))
 
 
 class SCMStepRunViewSet(FilterViewMixin, AuditViewSet):
@@ -198,28 +222,24 @@ class SCMReleaseViewSet(FilterViewMixin, ReadOnlyAuditViewMixin):
     model = SCMRelease
     serializer_class = SCMReleaseSerializer
 
-    parameter_lookup_map = {
-        'application': 'scm_pipeline_runs__application'
-    }
+    parameter_lookup_map = {"application": "scm_pipeline_runs__application"}
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
-        return super().get_queryset().filter(
-            scm_pipeline_runs__application__project__team__group__in=user_groups
-        )
+        return super().get_queryset().filter(scm_pipeline_runs__application__project__team__group__in=user_groups)
 
 
 class ApplicationMetadataViewSet(AuditViewSet):
     model = ApplicationMetadata
     serializer_class = ApplicationMetadataSerializer
-    lookup_field = 'key'
+    lookup_field = "key"
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
         kwargs = {
-            'application__project__team__group__in': user_groups,
-            'application__deleted': False,
-            'application': self.kwargs['applications_pk'],
-            'deleted': False,
+            "application__project__team__group__in": user_groups,
+            "application__deleted": False,
+            "application": self.kwargs["applications_pk"],
+            "deleted": False,
         }
         return super().get_queryset().filter(**kwargs)

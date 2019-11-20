@@ -2,8 +2,8 @@ from django.apps import AppConfig
 
 
 class KatkaCoreConfig(AppConfig):
-    name = 'katka'
-    label = 'katka'
+    name = "katka"
+    label = "katka"
 
     def ready(self):
         super().ready()
