@@ -6,13 +6,9 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0020_multiple_pipeline_runs_per_release'),
+        ("katka", "0020_multiple_pipeline_runs_per_release"),
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='scmsteprun',
-            name='tags',
-            field=models.TextField(blank=True),
-        ),
+        migrations.AddField(model_name="scmsteprun", name="tags", field=models.TextField(blank=True),),
     ]

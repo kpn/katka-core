@@ -6,18 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0013_update_step_statuses'),
+        ("katka", "0013_update_step_statuses"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='scmpipelinerun',
-            name='status',
-            field=models.CharField(choices=[('failed', 'failed'), ('success', 'success'), ('in progress', 'in progress')], default='initializing', max_length=30),
+            model_name="scmpipelinerun",
+            name="status",
+            field=models.CharField(
+                choices=[("failed", "failed"), ("success", "success"), ("in progress", "in progress")],
+                default="initializing",
+                max_length=30,
+            ),
         ),
         migrations.AlterField(
-            model_name='scmsteprun',
-            name='status',
-            field=models.CharField(choices=[('not started', 'not started'), ('in progress', 'in progress'), ('waiting', 'waiting'), ('skipped', 'skipped'), ('failed', 'failed'), ('success', 'success')], default='not started', max_length=30),
+            model_name="scmsteprun",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("not started", "not started"),
+                    ("in progress", "in progress"),
+                    ("waiting", "waiting"),
+                    ("skipped", "skipped"),
+                    ("failed", "failed"),
+                    ("success", "success"),
+                ],
+                default="not started",
+                max_length=30,
+            ),
         ),
     ]

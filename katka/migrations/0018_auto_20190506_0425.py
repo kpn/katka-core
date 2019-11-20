@@ -6,28 +6,23 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0017_auto_20190501_0917'),
+        ("katka", "0017_auto_20190501_0917"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='scmpipelinerun',
-            options={'verbose_name': 'SCM pipeline', 'verbose_name_plural': 'SCM pipelines'},
+            name="scmpipelinerun", options={"verbose_name": "SCM pipeline", "verbose_name_plural": "SCM pipelines"},
         ),
         migrations.AlterModelOptions(
-            name='scmrelease',
-            options={'verbose_name': 'SCM release', 'verbose_name_plural': 'SCM releases'},
+            name="scmrelease", options={"verbose_name": "SCM release", "verbose_name_plural": "SCM releases"},
         ),
         migrations.AlterModelOptions(
-            name='scmrepository',
-            options={'verbose_name': 'SCM repository', 'verbose_name_plural': 'SCM repositories'},
+            name="scmrepository", options={"verbose_name": "SCM repository", "verbose_name_plural": "SCM repositories"},
         ),
         migrations.AlterModelOptions(
-            name='scmservice',
-            options={'verbose_name': 'SCM service', 'verbose_name_plural': 'SCM services'},
+            name="scmservice", options={"verbose_name": "SCM service", "verbose_name_plural": "SCM services"},
         ),
         migrations.AlterModelOptions(
-            name='scmsteprun',
-            options={'verbose_name': 'SCM step', 'verbose_name_plural': 'SCM steps'},
+            name="scmsteprun", options={"verbose_name": "SCM step", "verbose_name_plural": "SCM steps"},
         ),
     ]

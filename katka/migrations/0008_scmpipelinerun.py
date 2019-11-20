@@ -11,28 +11,36 @@ import katka.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0007_remove_status_add_deleted'),
+        ("katka", "0007_remove_status_add_deleted"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SCMPipelineRun',
+            name="SCMPipelineRun",
             fields=[
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('created_username', katka.fields.AutoUsernameField(max_length=50)),
-                ('modified', models.DateTimeField(auto_now=True)),
-                ('modified_username', katka.fields.AutoUsernameField(max_length=50)),
-                ('deleted', models.BooleanField(default=False)),
-                ('public_identifier', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('commit_hash', models.CharField(max_length=64)),
-                ('status', models.CharField(choices=[('failed', 'failed'), ('success', 'success'), ('in progress', 'in progress')], default='in progress', max_length=30)),
-                ('steps_total', models.PositiveSmallIntegerField()),
-                ('steps_completed', models.PositiveSmallIntegerField(default=0)),
-                ('pipeline_yaml', models.TextField()),
-                ('application', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='katka.Application')),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("created_username", katka.fields.AutoUsernameField(max_length=50)),
+                ("modified", models.DateTimeField(auto_now=True)),
+                ("modified_username", katka.fields.AutoUsernameField(max_length=50)),
+                ("deleted", models.BooleanField(default=False)),
+                (
+                    "public_identifier",
+                    models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False),
+                ),
+                ("commit_hash", models.CharField(max_length=64)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("failed", "failed"), ("success", "success"), ("in progress", "in progress")],
+                        default="in progress",
+                        max_length=30,
+                    ),
+                ),
+                ("steps_total", models.PositiveSmallIntegerField()),
+                ("steps_completed", models.PositiveSmallIntegerField(default=0)),
+                ("pipeline_yaml", models.TextField()),
+                ("application", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="katka.Application")),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False,},
         ),
     ]

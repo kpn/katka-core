@@ -2,12 +2,27 @@ from django.contrib.auth.models import Group
 
 from katka.constants import STEP_STATUS_CHOICES
 from katka.models import (
-    Application, ApplicationMetadata, Credential, CredentialSecret, Project, SCMPipelineRun, SCMRelease, SCMRepository,
-    SCMService, SCMStepRun, Team,
+    Application,
+    ApplicationMetadata,
+    Credential,
+    CredentialSecret,
+    Project,
+    SCMPipelineRun,
+    SCMRelease,
+    SCMRepository,
+    SCMService,
+    SCMStepRun,
+    Team,
 )
 from katka.serializer_fields import (
-    ApplicationRelatedField, CredentialRelatedField, GroupNameField, ProjectRelatedField, SCMPipelineRunRelatedField,
-    SCMRepositoryRelatedField, SCMServiceRelatedField, TeamRelatedField,
+    ApplicationRelatedField,
+    CredentialRelatedField,
+    GroupNameField,
+    ProjectRelatedField,
+    SCMPipelineRunRelatedField,
+    SCMRepositoryRelatedField,
+    SCMServiceRelatedField,
+    TeamRelatedField,
 )
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
@@ -22,11 +37,11 @@ class TeamSerializer(KatkaSerializer):
 
     class Meta:
         model = Team
-        fields = ('public_identifier', 'slug', 'name', 'group')
+        fields = ("public_identifier", "slug", "name", "group")
 
     def validate_group(self, group):
-        if not self.context['request'].user.groups.filter(name=group.name).exists():
-            raise PermissionDenied('User is not a member of this group')
+        if not self.context["request"].user.groups.filter(name=group.name).exists():
+            raise PermissionDenied("User is not a member of this group")
 
         return group
 
@@ -36,7 +51,7 @@ class ProjectSerializer(KatkaSerializer):
 
     class Meta:
         model = Project
-        fields = ('public_identifier', 'slug', 'name', 'team')
+        fields = ("public_identifier", "slug", "name", "team")
 
 
 class ApplicationSerializer(KatkaSerializer):
@@ -45,7 +60,7 @@ class ApplicationSerializer(KatkaSerializer):
 
     class Meta:
         model = Application
-        fields = ('public_identifier', 'slug', 'name', 'project', 'scm_repository')
+        fields = ("public_identifier", "slug", "name", "project", "scm_repository")
 
 
 class CredentialSerializer(KatkaSerializer):
@@ -53,7 +68,7 @@ class CredentialSerializer(KatkaSerializer):
 
     class Meta:
         model = Credential
-        fields = ('public_identifier', 'name', 'team')
+        fields = ("public_identifier", "name", "team")
 
 
 class CredentialSecretSerializer(serializers.ModelSerializer):
@@ -61,19 +76,18 @@ class CredentialSecretSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CredentialSecret
-        fields = ('key', 'value', 'credential')
+        fields = ("key", "value", "credential")
 
     def to_internal_value(self, data):
         """Automatically add credential pk based on url kwargs"""
-        data['credential'] = self.context['view'].kwargs['credentials_pk']
+        data["credential"] = self.context["view"].kwargs["credentials_pk"]
         return super().to_internal_value(data)
 
 
 class SCMServiceSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = SCMService
-        fields = ('public_identifier', 'scm_service_type', 'server_url')
+        fields = ("public_identifier", "scm_service_type", "server_url")
 
 
 class SCMRepositorySerializer(KatkaSerializer):
@@ -82,7 +96,7 @@ class SCMRepositorySerializer(KatkaSerializer):
 
     class Meta:
         model = SCMRepository
-        fields = ('public_identifier', 'organisation', 'repository_name', 'credential', 'scm_service')
+        fields = ("public_identifier", "organisation", "repository_name", "credential", "scm_service")
 
 
 class SCMPipelineRunSerializer(KatkaSerializer):
@@ -90,9 +104,18 @@ class SCMPipelineRunSerializer(KatkaSerializer):
 
     class Meta:
         model = SCMPipelineRun
-        fields = ('public_identifier', 'commit_hash', 'first_parent_hash', 'status', 'steps_total', 'steps_completed',
-                  'pipeline_yaml', 'application', 'scmrelease_set')
-        read_only_fields = ('scmrelease_set',)
+        fields = (
+            "public_identifier",
+            "commit_hash",
+            "first_parent_hash",
+            "status",
+            "steps_total",
+            "steps_completed",
+            "pipeline_yaml",
+            "application",
+            "scmrelease_set",
+        )
+        read_only_fields = ("scmrelease_set",)
 
 
 class SCMStepRunSerializer(KatkaSerializer):
@@ -101,8 +124,18 @@ class SCMStepRunSerializer(KatkaSerializer):
     class Meta:
         model = SCMStepRun
         fields = (
-            'public_identifier', 'step_type', 'slug', 'name', 'stage', 'status', 'output', 'sequence_id',
-            'scm_pipeline_run', 'tags', 'started_at', 'ended_at'
+            "public_identifier",
+            "step_type",
+            "slug",
+            "name",
+            "stage",
+            "status",
+            "output",
+            "sequence_id",
+            "scm_pipeline_run",
+            "tags",
+            "started_at",
+            "ended_at",
         )
 
 
@@ -113,12 +146,10 @@ class SCMStepRunUpdateSerializer(KatkaSerializer):
 
     class Meta:
         model = SCMStepRun
-        fields = (
-            'public_identifier', 'status', 'ended_at'
-        )
+        fields = ("public_identifier", "status", "ended_at")
 
     def __init__(self, *args, **kwargs):
-        kwargs['partial'] = False  # otherwise DRF will allow empty status
+        kwargs["partial"] = False  # otherwise DRF will allow empty status
         super().__init__(*args, **kwargs)
 
 
@@ -127,8 +158,8 @@ class SCMReleaseSerializer(KatkaSerializer):
 
     class Meta:
         model = SCMRelease
-        fields = ('public_identifier', 'name', 'started_at', 'ended_at', 'scm_pipeline_runs', 'status')
-        read_only_fields = ('started_at', 'ended_at', 'scm_pipeline_runs')
+        fields = ("public_identifier", "name", "started_at", "ended_at", "scm_pipeline_runs", "status")
+        read_only_fields = ("started_at", "ended_at", "scm_pipeline_runs")
 
 
 class SCMReleaseCreateSerializer(KatkaSerializer):
@@ -136,7 +167,7 @@ class SCMReleaseCreateSerializer(KatkaSerializer):
 
     class Meta:
         model = SCMRelease
-        fields = ('name', 'scm_pipeline_runs', 'status')
+        fields = ("name", "scm_pipeline_runs", "status")
 
 
 class ApplicationMetadataSerializer(serializers.ModelSerializer):
@@ -144,9 +175,9 @@ class ApplicationMetadataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ApplicationMetadata
-        fields = ('key', 'value', 'application')
+        fields = ("key", "value", "application")
 
     def to_internal_value(self, data):
         """Automatically add application pk based on url kwargs"""
-        data['application'] = self.context['view'].kwargs['applications_pk']
+        data["application"] = self.context["view"].kwargs["applications_pk"]
         return super().to_internal_value(data)

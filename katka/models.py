@@ -6,8 +6,12 @@ from django.db import models
 from encrypted_model_fields.fields import EncryptedCharField
 from katka.auditedmodel import AuditedModel
 from katka.constants import (
-    PIPELINE_STATUS_CHOICES, PIPELINE_STATUS_INITIALIZING, RELEASE_STATUS_CHOICES, RELEASE_STATUS_IN_PROGRESS,
-    STEP_STATUS_CHOICES, STEP_STATUS_NOT_STARTED,
+    PIPELINE_STATUS_CHOICES,
+    PIPELINE_STATUS_INITIALIZING,
+    RELEASE_STATUS_CHOICES,
+    RELEASE_STATUS_IN_PROGRESS,
+    STEP_STATUS_CHOICES,
+    STEP_STATUS_NOT_STARTED,
 )
 from katka.fields import KatkaSlugField
 
@@ -19,7 +23,7 @@ class Team(AuditedModel):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     def __str__(self):  # pragma: no cover
-        return f'{self.group.name}'
+        return f"{self.group.name}"
 
 
 class Project(AuditedModel):
@@ -29,10 +33,10 @@ class Project(AuditedModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('team', 'slug')
+        unique_together = ("team", "slug")
 
     def __str__(self):  # pragma: no cover
-        return f'{self.name}'
+        return f"{self.name}"
 
 
 class Credential(AuditedModel):
@@ -42,7 +46,7 @@ class Credential(AuditedModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
     def __str__(self):  # pragma: no cover
-        return f'{self.credential_type}/{self.name}'
+        return f"{self.credential_type}/{self.name}"
 
 
 class CredentialSecret(AuditedModel):
@@ -51,29 +55,29 @@ class CredentialSecret(AuditedModel):
     credential = models.ForeignKey(Credential, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('credential', 'key')
+        unique_together = ("credential", "key")
 
     def __str__(self):  # pragma: no cover
-        return f'{self.credential.name}/{self.key}'
+        return f"{self.credential.name}/{self.key}"
 
 
 class SCMService(AuditedModel):
     class Meta:
-        verbose_name = 'SCM service'
-        verbose_name_plural = 'SCM services'
+        verbose_name = "SCM service"
+        verbose_name_plural = "SCM services"
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     scm_service_type = models.CharField(max_length=48)
     server_url = models.URLField(null=False)
 
     def __str__(self):  # pragma: no cover
-        return f'{self.scm_service_type}/{self.server_url}'
+        return f"{self.scm_service_type}/{self.server_url}"
 
 
 class SCMRepository(AuditedModel):
     class Meta:
-        verbose_name = 'SCM repository'
-        verbose_name_plural = 'SCM repositories'
+        verbose_name = "SCM repository"
+        verbose_name_plural = "SCM repositories"
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organisation = models.CharField(max_length=128)
@@ -82,7 +86,7 @@ class SCMRepository(AuditedModel):
     scm_service = models.ForeignKey(SCMService, on_delete=models.PROTECT)
 
     def __str__(self):  # pragma: no cover
-        return f'{self.organisation}/{self.repository_name}'
+        return f"{self.organisation}/{self.repository_name}"
 
 
 class Application(AuditedModel):
@@ -93,42 +97,42 @@ class Application(AuditedModel):
     scm_repository = models.OneToOneField(SCMRepository, on_delete=models.PROTECT)
 
     class Meta:
-        unique_together = ('project', 'slug')
+        unique_together = ("project", "slug")
 
     def __str__(self):  # pragma: no cover
-        return f'{self.name}'
+        return f"{self.name}"
 
 
 # Pipeline run results
 class SCMPipelineRun(AuditedModel):
     class Meta:
-        verbose_name = 'SCM pipeline'
-        verbose_name_plural = 'SCM pipelines'
+        verbose_name = "SCM pipeline"
+        verbose_name_plural = "SCM pipelines"
         constraints = (
-            models.UniqueConstraint(fields=('commit_hash', 'application'), name='unique commits per application'),
+            models.UniqueConstraint(fields=("commit_hash", "application"), name="unique commits per application"),
         )
-        ordering = ['-created_at']
-        indexes = [models.Index(fields=['-created_at'])]
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["-created_at"])]
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     commit_hash = models.CharField(max_length=64)  # A SHA-1 hash is 40 characters, SHA-256 is 64 characters
     first_parent_hash = models.CharField(
         max_length=64,
-        help_text='Commit hash of first parent commit, to determine order of commits. First commit has none.',
+        help_text="Commit hash of first parent commit, to determine order of commits. First commit has none.",
         null=True,
         blank=True,
     )
     status = models.CharField(max_length=30, choices=PIPELINE_STATUS_CHOICES, default=PIPELINE_STATUS_INITIALIZING)
     steps_total = models.PositiveSmallIntegerField(default=0)
     steps_completed = models.PositiveSmallIntegerField(default=0)
-    pipeline_yaml = models.TextField(default='---')
+    pipeline_yaml = models.TextField(default="---")
     application = models.ForeignKey(Application, on_delete=models.PROTECT)
 
 
 class SCMStepRun(AuditedModel):
     class Meta:
-        verbose_name = 'SCM step'
-        verbose_name_plural = 'SCM steps'
+        verbose_name = "SCM step"
+        verbose_name_plural = "SCM steps"
 
     step_type = models.CharField(max_length=100, null=True)
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -158,10 +162,10 @@ class SCMStepRun(AuditedModel):
 # SCM Releases, comprises a range of commits that are released
 class SCMRelease(AuditedModel):
     class Meta:
-        verbose_name = 'SCM release'
-        verbose_name_plural = 'SCM releases'
-        ordering = ['-created_at']
-        indexes = [models.Index(fields=['-created_at'])]
+        verbose_name = "SCM release"
+        verbose_name_plural = "SCM releases"
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["-created_at"])]
 
     public_identifier = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
@@ -177,7 +181,7 @@ class ApplicationMetadata(AuditedModel):
     application = models.ForeignKey(Application, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('application', 'key')
+        unique_together = ("application", "key")
 
     def __str__(self):  # pragma: no cover
-        return f'{self.application.name}/{self.key}'
+        return f"{self.application.name}/{self.key}"

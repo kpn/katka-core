@@ -6,16 +6,10 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0010_rename_scmtype'),
+        ("katka", "0010_rename_scmtype"),
     ]
 
     operations = [
-        migrations.AlterUniqueTogether(
-            name='credential',
-            unique_together=set(),
-        ),
-        migrations.RemoveField(
-            model_name='credential',
-            name='slug',
-        ),
+        migrations.AlterUniqueTogether(name="credential", unique_together=set(),),
+        migrations.RemoveField(model_name="credential", name="slug",),
     ]

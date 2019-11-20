@@ -12,28 +12,28 @@ class TestAutoUsername:
         with pytest.raises(MissingUsername) as e:
             model.save()
 
-        assert 'username_on_model(AlwaysUpdate, username)' in e.value.args[0]
+        assert "username_on_model(AlwaysUpdate, username)" in e.value.args[0]
 
     def test_always_update(self):
         model = AlwaysUpdate()
-        with username_on_model(AlwaysUpdate, 'test_user'):
+        with username_on_model(AlwaysUpdate, "test_user"):
             model.save()
 
-        assert model.field == 'test_user'
+        assert model.field == "test_user"
 
-        with username_on_model(AlwaysUpdate, 'user2'):
+        with username_on_model(AlwaysUpdate, "user2"):
             model.save()
 
-        assert model.field == 'user2'
+        assert model.field == "user2"
 
     def test_only_on_create(self):
         model = OnlyOnCreate()
-        with username_on_model(OnlyOnCreate, 'test_user'):
+        with username_on_model(OnlyOnCreate, "test_user"):
             model.save()
 
-        assert model.field == 'test_user'
+        assert model.field == "test_user"
 
-        with username_on_model(OnlyOnCreate, 'user2'):
+        with username_on_model(OnlyOnCreate, "user2"):
             model.save()
 
-        assert model.field == 'test_user'
+        assert model.field == "test_user"

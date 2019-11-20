@@ -11,36 +11,34 @@ import katka.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0002_add_project_and_slug'),
+        ("katka", "0002_add_project_and_slug"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Credential',
+            name="Credential",
             fields=[
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('created_username', katka.fields.AutoUsernameField(max_length=50)),
-                ('modified', models.DateTimeField(auto_now=True)),
-                ('modified_username', katka.fields.AutoUsernameField(max_length=50)),
-                ('status', models.CharField(choices=[('active', 'active'), ('inactive', 'inactive')], default='active', max_length=50)),
-                ('public_identifier', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('slug', katka.fields.KatkaSlugField(max_length=10)),
-                ('name', models.CharField(max_length=100)),
-                ('credential_type', models.CharField(max_length=50)),
-                ('team', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='katka.Team')),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("created_username", katka.fields.AutoUsernameField(max_length=50)),
+                ("modified", models.DateTimeField(auto_now=True)),
+                ("modified_username", katka.fields.AutoUsernameField(max_length=50)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("active", "active"), ("inactive", "inactive")], default="active", max_length=50
+                    ),
+                ),
+                (
+                    "public_identifier",
+                    models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False),
+                ),
+                ("slug", katka.fields.KatkaSlugField(max_length=10)),
+                ("name", models.CharField(max_length=100)),
+                ("credential_type", models.CharField(max_length=50)),
+                ("team", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="katka.Team")),
             ],
         ),
-        migrations.AlterField(
-            model_name='project',
-            name='slug',
-            field=katka.fields.KatkaSlugField(max_length=10),
-        ),
-        migrations.AlterUniqueTogether(
-            name='project',
-            unique_together={('team', 'slug')},
-        ),
-        migrations.AlterUniqueTogether(
-            name='credential',
-            unique_together={('team', 'slug')},
-        ),
+        migrations.AlterField(model_name="project", name="slug", field=katka.fields.KatkaSlugField(max_length=10),),
+        migrations.AlterUniqueTogether(name="project", unique_together={("team", "slug")},),
+        migrations.AlterUniqueTogether(name="credential", unique_together={("team", "slug")},),
     ]

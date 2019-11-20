@@ -6,13 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0014_update_pipeline_statuses'),
+        ("katka", "0014_update_pipeline_statuses"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='scmpipelinerun',
-            name='status',
-            field=models.CharField(choices=[('initializing', 'initializing'), ('in progress', 'in progress'), ('failed', 'failed'), ('success', 'success')], default='initializing', max_length=30),
+            model_name="scmpipelinerun",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("initializing", "initializing"),
+                    ("in progress", "in progress"),
+                    ("failed", "failed"),
+                    ("success", "success"),
+                ],
+                default="initializing",
+                max_length=30,
+            ),
         ),
     ]

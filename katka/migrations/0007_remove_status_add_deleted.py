@@ -6,71 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0006_application_and_scm_repository'),
+        ("katka", "0006_application_and_scm_repository"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='application',
-            name='status',
-        ),
-        migrations.RemoveField(
-            model_name='credential',
-            name='status',
-        ),
-        migrations.RemoveField(
-            model_name='credentialsecret',
-            name='status',
-        ),
-        migrations.RemoveField(
-            model_name='project',
-            name='status',
-        ),
-        migrations.RemoveField(
-            model_name='scmrepository',
-            name='status',
-        ),
-        migrations.RemoveField(
-            model_name='scmservice',
-            name='status',
-        ),
-        migrations.RemoveField(
-            model_name='team',
-            name='status',
-        ),
-        migrations.AddField(
-            model_name='application',
-            name='deleted',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='credential',
-            name='deleted',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='credentialsecret',
-            name='deleted',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='project',
-            name='deleted',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='scmrepository',
-            name='deleted',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='scmservice',
-            name='deleted',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='team',
-            name='deleted',
-            field=models.BooleanField(default=False),
-        ),
+        migrations.RemoveField(model_name="application", name="status",),
+        migrations.RemoveField(model_name="credential", name="status",),
+        migrations.RemoveField(model_name="credentialsecret", name="status",),
+        migrations.RemoveField(model_name="project", name="status",),
+        migrations.RemoveField(model_name="scmrepository", name="status",),
+        migrations.RemoveField(model_name="scmservice", name="status",),
+        migrations.RemoveField(model_name="team", name="status",),
+        migrations.AddField(model_name="application", name="deleted", field=models.BooleanField(default=False),),
+        migrations.AddField(model_name="credential", name="deleted", field=models.BooleanField(default=False),),
+        migrations.AddField(model_name="credentialsecret", name="deleted", field=models.BooleanField(default=False),),
+        migrations.AddField(model_name="project", name="deleted", field=models.BooleanField(default=False),),
+        migrations.AddField(model_name="scmrepository", name="deleted", field=models.BooleanField(default=False),),
+        migrations.AddField(model_name="scmservice", name="deleted", field=models.BooleanField(default=False),),
+        migrations.AddField(model_name="team", name="deleted", field=models.BooleanField(default=False),),
     ]

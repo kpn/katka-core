@@ -6,13 +6,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0009_scmsteprun'),
+        ("katka", "0009_scmsteprun"),
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name='scmservice',
-            old_name='type',
-            new_name='scm_service_type',
-        ),
+        migrations.RenameField(model_name="scmservice", old_name="type", new_name="scm_service_type",),
     ]

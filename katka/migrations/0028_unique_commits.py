@@ -6,12 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('katka', '0027_commit_ordering'),
+        ("katka", "0027_commit_ordering"),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='scmpipelinerun',
-            constraint=models.UniqueConstraint(fields=('commit_hash', 'application'), name='unique commits per application'),
+            model_name="scmpipelinerun",
+            constraint=models.UniqueConstraint(
+                fields=("commit_hash", "application"), name="unique commits per application"
+            ),
         ),
     ]
