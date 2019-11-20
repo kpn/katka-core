@@ -93,6 +93,20 @@ class TestSCMReleaseViewSet:
         assert len(parsed[0]['scm_pipeline_runs']) == 1
         assert UUID(parsed[0]['scm_pipeline_runs'][0]) == another_scm_pipeline_run.public_identifier
 
+    def test_sorted_scm_releases_created_at(self, client, logged_in_user, scm_pipeline_run, scm_release,
+                                            another_scm_pipeline_run, another_scm_release,
+                                            another_another_scm_pipeline_run):
+        response = client.get('/scm-releases/')
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 2
+        # we can only test by the name since `created_at` is not an response field
+        # it is assumed that Version 15.0 is created after Version 0.13.1 in the fixtures
+        assert parsed[0]['name'] == 'Version 15.0'
+        assert parsed[1]['name'] == 'Version 0.13.1'
+        assert parsed[0]['scm_pipeline_runs'][0] == str(another_another_scm_pipeline_run.public_identifier)
+        assert parsed[0]['scm_pipeline_runs'][1] == str(another_scm_pipeline_run.public_identifier)
+
     def test_filter_by_application_multiple_pipeline_runs(self, client, logged_in_user, scm_pipeline_run, scm_release,
                                                           another_scm_pipeline_run, another_scm_release,
                                                           another_another_scm_pipeline_run, another_application):
