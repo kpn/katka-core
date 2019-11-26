@@ -4,7 +4,12 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from katka.constants import PIPELINE_STATUS_INITIALIZING, PIPELINE_STATUS_QUEUED, STEP_FINAL_STATUSES
+from katka.constants import (
+    PIPELINE_STATUS_INITIALIZING,
+    PIPELINE_STATUS_QUEUED,
+    PIPELINE_STATUS_SKIPPED,
+    STEP_FINAL_STATUSES,
+)
 from katka.fields import username_on_model
 from katka.models import SCMPipelineRun, SCMStepRun
 from katka.releases import close_release_if_pipeline_finished, create_release_if_necessary
@@ -62,6 +67,9 @@ def send_pipeline_change_notification(sender, **kwargs):
 @receiver(post_save, sender=SCMPipelineRun)
 def create_close_releases(sender, **kwargs):
     pipeline = kwargs["instance"]
+    if pipeline.status == PIPELINE_STATUS_SKIPPED:
+        return
+
     if kwargs["created"] is True:
         create_release_if_necessary(pipeline)
     else:

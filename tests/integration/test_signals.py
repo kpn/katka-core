@@ -169,6 +169,20 @@ class TestReleaseSignal:
         assert release.scm_pipeline_runs.filter(pk__exact=scm_pipeline_run.pk).count() == 1
         assert release.scm_pipeline_runs.filter(pk__exact=pipeline_run.pk).count() == 1
 
+    def test_not_added_to_release_when_skipped(self, scm_pipeline_run, application):
+        assert SCMRelease.objects.count() == 1
+        release = SCMRelease.objects.first()
+        assert len(release.scm_pipeline_runs.all()) == 1
+
+        session = mock.MagicMock()
+        overrides = {"PIPELINE_CHANGE_NOTIFICATION_SESSION": session}
+        with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
+            pipeline_run = SCMPipelineRun.objects.create(application=application, status="skipped")
+
+        assert len(release.scm_pipeline_runs.all()) == 1
+        assert release.scm_pipeline_runs.filter(pk__exact=scm_pipeline_run.pk).count() == 1
+        assert release.scm_pipeline_runs.filter(pk__exact=pipeline_run.pk).count() == 0
+
     def test_new_pipeline_gets_added_to_new_release(self, scm_pipeline_run, scm_release, application):
         """When a release is closed, a new release should be created when a new pipeline is created"""
         assert SCMRelease.objects.count() == 1
