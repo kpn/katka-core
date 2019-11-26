@@ -24,7 +24,7 @@ class WithUsernameAdminModel(admin.ModelAdmin):
 
 @admin.register(Team)
 class TeamAdmin(WithUsernameAdminModel):
-    fields = ("name", "group")
+    fields = ("name", "slug", "group")
 
 
 @admin.register(Project)
