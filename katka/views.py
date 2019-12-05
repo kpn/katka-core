@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 from django.conf import settings
+from django.db import IntegrityError
 
 import pytz
 from katka.constants import (
@@ -11,7 +12,7 @@ from katka.constants import (
     PIPELINE_STATUS_QUEUED,
     STEP_FINAL_STATUSES,
 )
-from katka.exceptions import Conflict
+from katka.exceptions import AlreadyExists, ParentCommitMissing
 from katka.models import (
     Application,
     ApplicationMetadata,
@@ -134,11 +135,17 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
 
         return True
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError:
+            raise AlreadyExists()
+
     def perform_create(self, serializer):
         if not self._can_create(
             serializer.validated_data["application"], serializer.validated_data.get("first_parent_hash")
         ):
-            raise Conflict()
+            raise ParentCommitMissing()
         super().perform_create(serializer)
 
     def _ready_to_run(self, pipeline_run):

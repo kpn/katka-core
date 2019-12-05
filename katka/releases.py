@@ -103,7 +103,7 @@ def _add_output(pipeline_output: dict, step_output: str) -> None:
     try:
         pipeline_output.update(json.loads(step_output))
     except json.JSONDecodeError:
-        logging.warning("Invalid JSON in step output")
+        log.warning("Invalid JSON in step output")
 
 
 def _get_current_release(pipeline):
