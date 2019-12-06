@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from django.db import transaction
+
 import pytest
 from katka import models
 from katka.constants import PIPELINE_STATUS_FAILED
@@ -220,6 +222,25 @@ do-release:
         p = models.SCMPipelineRun.objects.get(pk=scm_pipeline_run.public_identifier)
         assert p.steps_completed == 4
 
+    def test_create_already_exists(self, client, logged_in_user, application, scm_pipeline_run):
+        initial_count = models.SCMPipelineRun.objects.count()
+        url = f"/scm-pipeline-runs/"
+        # Provide a different status, should not create a new PLR
+        data = {
+            "commit_hash": scm_pipeline_run.commit_hash,
+            "application": application.public_identifier,
+            "status": "skipped",
+        }
+
+        #  This atomic transaction context allows us to do a count query after the request
+        with transaction.atomic():
+            response = client.post(url, data=data, content_type="application/json")
+
+        assert response.status_code == 409
+        error = response.json()
+        assert error["code"] == "already_exists"
+        assert models.SCMPipelineRun.objects.count() == initial_count
+
     def test_create_first_commit(self, client, logged_in_user, application, scm_pipeline_run):
         initial_count = models.SCMPipelineRun.objects.count()
         url = f"/scm-pipeline-runs/"
@@ -254,6 +275,8 @@ do-release:
         }
         response = client.post(url, data=data, content_type="application/json")
         assert response.status_code == 409
+        error = response.json()
+        assert error["code"] == "parent_commit_missing"
         assert models.SCMPipelineRun.objects.count() == initial_count
         assert not models.SCMPipelineRun.objects.filter(commit_hash="874AE57A143AEC5156FD1444A017A32137A3E34A").exists()
 
