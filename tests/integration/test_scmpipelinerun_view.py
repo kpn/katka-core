@@ -4,7 +4,7 @@ from django.db import transaction
 
 import pytest
 from katka import models
-from katka.constants import PIPELINE_STATUS_FAILED
+from katka.constants import PIPELINE_STATUS_FAILED, PIPELINE_STATUS_SKIPPED, PIPELINE_STATUS_SUCCESS
 from katka.fields import username_on_model
 
 
@@ -325,10 +325,13 @@ class TestSCMPipelineRunQueueOrRun:
         assert str(another_another_scm_pipeline_run.public_identifier) in caplog.messages[0]
         assert str(another_another_scm_pipeline_run.first_parent_hash) in caplog.messages[0]
 
-    def test_linked_to_final_state(self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run):
+    @pytest.mark.parametrize("status", [PIPELINE_STATUS_FAILED, PIPELINE_STATUS_SUCCESS, PIPELINE_STATUS_SKIPPED])
+    def test_linked_to_final_state(
+        self, status, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run
+    ):
         """First parent is linked, and its status is in a final state"""
 
-        scm_pipeline_run.status = PIPELINE_STATUS_FAILED
+        scm_pipeline_run.status = status
         with username_on_model(models.SCMPipelineRun, "test"):
             scm_pipeline_run.save()
 
