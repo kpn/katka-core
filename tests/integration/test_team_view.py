@@ -88,6 +88,30 @@ class TestTeamViewSet:
         assert parsed["group"] == "group1"
         UUID(parsed["public_identifier"])  # should not raise
 
+    def test_get_by_project(self, client, logged_in_user, team, project):
+        response = client.get(f"/teams/{team.public_identifier}/?project={project.public_identifier}")
+        assert response.status_code == 200
+        parsed = response.json()
+        assert parsed["name"] == "A-Team"
+        assert parsed["group"] == "group1"
+        UUID(parsed["public_identifier"])  # should not raise
+
+    def test_get_by_project_bad(self, client, logged_in_user, team, project):
+        response = client.get(f"/teams/{team.public_identifier}/?project=12345")
+        assert response.status_code == 404
+
+    def test_get_by_application(self, client, logged_in_user, team, application):
+        response = client.get(f"/teams/{team.public_identifier}/?application={application.public_identifier}")
+        assert response.status_code == 200
+        parsed = response.json()
+        assert parsed["name"] == "A-Team"
+        assert parsed["group"] == "group1"
+        UUID(parsed["public_identifier"])  # should not raise
+
+    def test_get_by_application_bad(self, client, logged_in_user, team, application):
+        response = client.get(f"/teams/{team.public_identifier}/?application=12345")
+        assert response.status_code == 404
+
     def test_get_excludes_inactive(self, client, logged_in_user, deactivated_team):
         response = client.get(f"/teams/{deactivated_team.public_identifier}/")
         assert response.status_code == 404

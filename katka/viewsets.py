@@ -42,13 +42,10 @@ class FilterViewMixin:
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        # Fetch distinct for all model fields, to prevent duplications due to SQL Joins
-        queryset = queryset.distinct()
-
         # Allow filtering on any field in serializer
-        all_fields = self.serializer_class.Meta.fields
-        filter_fields_lookup = {field: field for field in all_fields}
-        filter_fields_keys = list(all_fields)
+        all_fields = self.model._meta.get_fields()
+        filter_fields_lookup = {field.name: field.name for field in all_fields}
+        filter_fields_keys = list(field.name for field in all_fields)
 
         # Also support a mapping from query parameter to django query field
         if self.parameter_lookup_map:
@@ -64,6 +61,7 @@ class FilterViewMixin:
                 filters[django_lookup_field] = value
 
         if filters:
-            queryset = queryset.filter(**filters)
+            # Fetch distinct for all model fields, to prevent duplications due to SQL Joins
+            queryset = queryset.distinct().filter(**filters)
 
         return queryset
