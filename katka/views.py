@@ -51,6 +51,7 @@ class TeamViewSet(FilterViewMixin, AuditViewSet):
     serializer_class = TeamSerializer
     lookup_field = "public_identifier"
     lookup_value_regex = "[0-9a-f-]{36}"
+    parameter_lookup_map = {"application": "project__application"}
 
     def get_queryset(self):
         # Only show teams that are linked to a group that the user is part of
@@ -256,7 +257,13 @@ class SCMReleaseViewSet(FilterViewMixin, ReadOnlyAuditViewMixin):
 
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
-        return super().get_queryset().filter(scm_pipeline_runs__application__project__team__group__in=user_groups)
+        # Do select distinct because of the many to many relationship
+        return (
+            super()
+            .get_queryset()
+            .distinct()
+            .filter(scm_pipeline_runs__application__project__team__group__in=user_groups)
+        )
 
 
 class ApplicationMetadataViewSet(AuditViewSet):
