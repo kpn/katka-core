@@ -1,27 +1,50 @@
+from katka.auth import has_scope
 from katka.fields import username_on_model
 from rest_framework import mixins, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from .permissions import HasFullScope
 
-class ReadOnlyAuditViewMixin(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+
+class UserOrScopeViewSet(GenericViewSet):
+    permission_classes = [IsAuthenticated | HasFullScope]
+
+    def get_queryset(self):
+        # do not call super().get_queryset() since it raises NotImplementedError
+        queryset = self.model.objects.all()
+        if has_scope(self.request):
+            return queryset
+
+        return self.get_user_restricted_queryset(queryset)
+
+    def get_user_restricted_queryset(self, queryset):
+        raise NotImplementedError  # noqa
+
+
+class ReadOnlyAuditMixin(mixins.RetrieveModelMixin, mixins.ListModelMixin, UserOrScopeViewSet):
     model = None
 
     def get_queryset(self):
-        return self.model.objects.exclude(deleted=True)
+        return super().get_queryset().exclude(deleted=True)
 
 
-class UpdateAuditMixin(mixins.UpdateModelMixin, GenericViewSet):
+class UpdateAuditMixin(mixins.UpdateModelMixin, UserOrScopeViewSet):
+    model = None
+
     def update(self, request, *args, **kwargs):
         with username_on_model(self.model, request.user.username):
             return super().update(request, *args, **kwargs)
 
 
-class AuditViewSet(mixins.CreateModelMixin, UpdateAuditMixin, mixins.DestroyModelMixin, ReadOnlyAuditViewMixin):
+class CreateAuditMixin(mixins.CreateModelMixin, UserOrScopeViewSet):
     def create(self, request, *args, **kwargs):
         with username_on_model(self.model, request.user.username):
             return super().create(request, *args, **kwargs)
 
+
+class DestroyAuditMixin(mixins.DestroyModelMixin, UserOrScopeViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.deleted = True
@@ -30,6 +53,10 @@ class AuditViewSet(mixins.CreateModelMixin, UpdateAuditMixin, mixins.DestroyMode
             instance.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AuditViewSet(CreateAuditMixin, UpdateAuditMixin, DestroyAuditMixin, ReadOnlyAuditMixin):
+    pass
 
 
 class FilterViewMixin:

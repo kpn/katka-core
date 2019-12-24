@@ -6,13 +6,6 @@ from katka import models
 
 @pytest.mark.django_db
 class TestCredentialSecretList:
-    def test_unauthenticated(self, client, team, credential, secret):
-        url = f"/credentials/{credential.public_identifier}/secrets/"
-        response = client.get(url)
-        assert response.status_code == 200
-        parsed = response.json()
-        assert len(parsed) == 0
-
     def test_authenticated(self, client, logged_in_user, team, credential, secret):
         response = client.get(f"/credentials/{credential.public_identifier}/secrets/")
         assert response.status_code == 200
@@ -26,11 +19,6 @@ class TestCredentialSecretList:
 
 @pytest.mark.django_db
 class TestCredentialSecretGet:
-    def test_unauthenticated(self, client, team, credential, secret):
-        url = f"/credentials/{credential.public_identifier}/secrets/{secret.key}/"
-        response = client.get(url)
-        assert response.status_code == 404
-
     def test_authenticated(self, client, logged_in_user, team, credential, secret):
         url = f"/credentials/{credential.public_identifier}/secrets/{secret.key}/"
         response = client.get(url)
@@ -58,11 +46,6 @@ class TestCredentialSecretGet:
 
 @pytest.mark.django_db
 class TestCredentialSecretDelete:
-    def test_unauthenticated(self, client, team, credential, secret):
-        url = f"/credentials/{credential.public_identifier}/secrets/{secret.key}/"
-        response = client.delete(url)
-        assert response.status_code == 404
-
     def test_authenticated(self, client, logged_in_user, team, credential, secret):
         url = f"/credentials/{credential.public_identifier}/secrets/{secret.key}/"
         response = client.delete(url)
@@ -94,12 +77,6 @@ class TestCredentialSecretDelete:
 
 @pytest.mark.django_db
 class TestCredentialSecretUpdate:
-    def test_unauthenticated(self, client, team, credential, secret):
-        url = f"/credentials/{credential.public_identifier}/secrets/{secret.key}/"
-        data = {"name": "B-Team", "group": "group1"}
-        response = client.put(url, data, content_type="application/json")
-        assert response.status_code == 404
-
     def test_authenticated(self, client, logged_in_user, team, credential, secret):
         url = f"/credentials/{credential.public_identifier}/secrets/{secret.key}/"
         data = {"key": "access_token", "value": "new value"}
@@ -133,11 +110,6 @@ class TestCredentialSecretUpdate:
 
 @pytest.mark.django_db
 class TestCredentialSecretPartialUpdate:
-    def test_unauthenticated(self, client, team, credential, secret):
-        url = f"/credentials/{credential.public_identifier}/secrets/{secret.key}/"
-        response = client.patch(url, {"name": "B-Team"}, content_type="application/json")
-        assert response.status_code == 404
-
     def test_authenticated(self, client, logged_in_user, team, credential, secret):
         url = f"/credentials/{credential.public_identifier}/secrets/{secret.key}/"
         data = {"value": "new value"}

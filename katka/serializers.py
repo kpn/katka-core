@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group
 
+from katka.auth import has_scope
 from katka.constants import STEP_STATUS_CHOICES
 from katka.models import (
     Application,
@@ -40,8 +41,14 @@ class TeamSerializer(KatkaSerializer):
         fields = ("public_identifier", "slug", "name", "group")
 
     def validate_group(self, group):
-        if not self.context["request"].user.groups.filter(name=group.name).exists():
-            raise PermissionDenied("User is not a member of this group")
+        if has_scope(self.context["request"]):
+            querystring = Group.objects
+        else:
+            querystring = self.context["request"].user.groups
+
+        querystring = querystring.filter(name=group.name)
+        if not querystring.exists():
+            raise PermissionDenied("Group does not exist or user is not a member of this group")
 
         return group
 

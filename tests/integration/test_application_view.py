@@ -5,49 +5,8 @@ from katka import models
 
 
 @pytest.mark.django_db
-class TestApplicationViewSetUnauthenticated:
-    """
-    When a user is not logged in, no group information is available, so nothing is returned.
-
-    For listing, that would be an empty list for other operations, an error like the object could
-    not be found, except on create (you need to be part of a group and anonymous users do not have any)
-    """
-
-    def test_list(self, client):
-        response = client.get("/applications/")
-        assert response.status_code == 200
-        parsed = response.json()
-        assert len(parsed) == 0
-
-    def test_get(self, client, application):
-        response = client.get(f"/applications/{application.name}/")
-        assert response.status_code == 404
-
-    def test_delete(self, client, application):
-        response = client.delete(f"/applications/{application.name}/")
-        assert response.status_code == 404
-
-    def test_update(self, client, project, application):
-        url = f"/applications/{application.name}/"
-        data = {"name": "B-Team", "group": "group1", "project": project.public_identifier}
-        response = client.put(url, data, content_type="application/json")
-        assert response.status_code == 404
-
-    def test_partial_update(self, client, application):
-        url = f"/applications/{application.name}/"
-        response = client.patch(url, {"name": "B-Team"}, content_type="application/json")
-        assert response.status_code == 404
-
-    def test_create(self, client, project):
-        url = "/applications/"
-        data = {"name": "Project D", "slug": "PRJD", "project": project.public_identifier}
-        response = client.post(url, data, content_type="application/json")
-        assert response.status_code == 403
-
-
-@pytest.mark.django_db
 class TestApplicationViewSet:
-    def test_list(self, client, logged_in_user, team, project, application, another_application):
+    def test_list(self, client, logged_in_user, team, project, application, my_other_application):
         response = client.get("/applications/")
         assert response.status_code == 200
         applications = response.json()
@@ -62,20 +21,20 @@ class TestApplicationViewSet:
         assert project.public_identifier in app_projects
 
     def test_filtered_list(
-        self, client, logged_in_user, team, project, another_project, scm_repository, application, another_application
+        self, client, logged_in_user, team, project, my_other_project, scm_repository, application, my_other_application
     ):
 
-        response = client.get("/applications/?project=" + str(another_project.public_identifier))
+        response = client.get("/applications/?project=" + str(my_other_project.public_identifier))
         assert response.status_code == 200
         parsed = response.json()
         assert len(parsed) == 1
         assert parsed[0]["name"] == "Application 2"
         assert parsed[0]["slug"] == "APP2"
         parsed_project = parsed[0]["project"]
-        assert UUID(parsed_project) == another_project.public_identifier
+        assert UUID(parsed_project) == my_other_project.public_identifier
 
     def test_filtered_list_non_existing_project(
-        self, client, logged_in_user, team, project, another_project, scm_repository, application, another_application
+        self, client, logged_in_user, team, project, my_other_project, scm_repository, application, my_other_application
     ):
 
         response = client.get("/applications/?project=12345678-1234-5678-1234-567812345678")

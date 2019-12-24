@@ -8,63 +8,8 @@ from katka import models
 
 
 @pytest.mark.django_db
-class TestSCMStepRunViewSetUnauthenticated:
-    """
-    When a user is not logged in, no group information is available, so nothing is returned.
-
-    For listing, that would be an empty list for other operations, an error like the object could
-    not be found, except on create (you need to be part of a group and anonymous users do not have any)
-    """
-
-    def test_list(self, client, scm_step_run):
-        response = client.get("/scm-step-runs/")
-        assert response.status_code == 200
-        parsed = response.json()
-        assert len(parsed) == 0
-
-    def test_get(self, client, scm_step_run):
-        response = client.get(f"/scm-step-runs/{scm_step_run.public_identifier}/")
-        assert response.status_code == 404
-
-    def test_delete(self, client, scm_step_run):
-        response = client.delete(f"/scm-step-runs/{scm_step_run.public_identifier}/")
-        assert response.status_code == 404
-
-    def test_update(self, client, scm_pipeline_run, scm_step_run):
-        url = f"/scm-step-runs/{scm_step_run.public_identifier}/"
-        data = {
-            "slug": "release",
-            "name": "Release product",
-            "stage": "Production",
-            "status": "success",
-            "output": "Command completed",
-            "scm_pipeline_run": scm_pipeline_run.public_identifier,
-        }
-        response = client.put(url, data, content_type="application/json")
-        assert response.status_code == 404
-
-    def test_partial_update(self, client, scm_step_run):
-        url = f"/scm-step-runs/{scm_step_run.public_identifier}/"
-        data = {"output": "Step executed."}
-        response = client.patch(url, data, content_type="application/json")
-        assert response.status_code == 404
-
-    def test_create(self, client, scm_pipeline_run, scm_step_run):
-        url = f"/scm-step-runs/"
-        data = {
-            "slug": "release",
-            "name": "Release product",
-            "stage": "Production",
-            "status": "in progress",
-            "scm_pipeline_run": scm_pipeline_run.public_identifier,
-        }
-        response = client.post(url, data=data, content_type="application/json")
-        assert response.status_code == 403
-
-
-@pytest.mark.django_db
 class TestSCMStepRunViewSet:
-    def test_list(self, client, logged_in_user, scm_pipeline_run, scm_step_run):
+    def test_list(self, client, logged_in_user, my_scm_pipeline_run, my_scm_step_run):
         response = client.get("/scm-step-runs/")
         assert response.status_code == 200
         parsed = response.json()
@@ -76,7 +21,7 @@ class TestSCMStepRunViewSet:
         assert parsed[0]["output"] == ""
         assert parsed[0]["started_at"] == "2018-11-11T08:25:30Z"
         assert parsed[0]["ended_at"] == "2018-11-11T09:01:40Z"
-        assert UUID(parsed[0]["scm_pipeline_run"]) == scm_pipeline_run.public_identifier
+        assert UUID(parsed[0]["scm_pipeline_run"]) == my_scm_pipeline_run.public_identifier
         UUID(parsed[0]["public_identifier"])  # should not raise
 
     def test_filtered_list(
