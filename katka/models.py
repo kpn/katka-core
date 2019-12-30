@@ -45,6 +45,9 @@ class Credential(AuditedModel):
     credential_type = models.CharField(max_length=50)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = ("name", "team")
+
     def __str__(self):  # pragma: no cover
         return f"{self.credential_type}/{self.name}"
 
