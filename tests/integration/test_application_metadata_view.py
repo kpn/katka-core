@@ -6,13 +6,6 @@ from katka import models
 
 @pytest.mark.django_db
 class TestApplicationMetadataList:
-    def test_unauthenticated(self, client, application, metadata):
-        url = f"/applications/{application.public_identifier}/metadata/"
-        response = client.get(url)
-        assert response.status_code == 200
-        parsed = response.json()
-        assert len(parsed) == 0
-
     def test_authenticated(self, client, logged_in_user, application, metadata):
         response = client.get(f"/applications/{application.public_identifier}/metadata/")
         assert response.status_code == 200
@@ -82,11 +75,13 @@ class TestApplicationMetadataDelete:
         assert response.status_code == 404
         assert models.ApplicationMetadata.objects.count() == before_count
 
-    def test_deactivated(self, client, logged_in_user, application, deactivated_metadata):
-        url = f"/applications/{application.public_identifier}/metadata/{deactivated_metadata.key}/"
+    def test_deactivated(self, client, logged_in_user, deactivated_metadata):
+        url = f"/applications/{deactivated_metadata.application.public_identifier}/metadata/{deactivated_metadata.key}/"
         response = client.delete(url)
         assert response.status_code == 404
-        s = models.ApplicationMetadata.objects.get(key=deactivated_metadata.key, application=application)
+        s = models.ApplicationMetadata.objects.get(
+            key=deactivated_metadata.key, application=deactivated_metadata.application
+        )
         assert s.deleted is True
 
     def test_not_my_metadata(self, client, logged_in_user, not_my_application, not_my_metadata):
@@ -125,13 +120,15 @@ class TestApplicationMetadataUpdate:
         response = client.put(url, data, content_type="application/json")
         assert response.status_code == 404
 
-    def test_deactivated(self, client, logged_in_user, application, deactivated_metadata):
-        url = f"/applications/{application.public_identifier}/metadata/{deactivated_metadata.key}/"
+    def test_deactivated(self, client, logged_in_user, deactivated_metadata):
+        url = f"/applications/{deactivated_metadata.application.public_identifier}/metadata/{deactivated_metadata.key}/"
         data = {"key": deactivated_metadata.key, "value": "v1"}
         response = client.put(url, data, content_type="application/json")
         assert response.status_code == 404
-        s = models.ApplicationMetadata.objects.get(key=deactivated_metadata.key, application=application)
-        assert s.value == "the-team"
+        s = models.ApplicationMetadata.objects.get(
+            key=deactivated_metadata.key, application=deactivated_metadata.application
+        )
+        assert s.value == "the-team-2"
 
     def test_not_my_metadata(self, client, logged_in_user, not_my_application, not_my_metadata):
         url = f"/applications/{not_my_application.public_identifier}/metadata/{not_my_metadata.key}/"
@@ -170,13 +167,15 @@ class TestApplicationMetadataPartialUpdate:
         response = client.patch(url, data, content_type="application/json")
         assert response.status_code == 404
 
-    def test_deactivated(self, client, logged_in_user, application, deactivated_metadata):
-        url = f"/applications/{application.public_identifier}/metadata/{deactivated_metadata.key}/"
+    def test_deactivated(self, client, logged_in_user, deactivated_metadata):
+        url = f"/applications/{deactivated_metadata.application.public_identifier}/metadata/{deactivated_metadata.key}/"
         data = {"value": "v1"}
         response = client.patch(url, data, content_type="application/json")
         assert response.status_code == 404
-        s = models.ApplicationMetadata.objects.get(key=deactivated_metadata.key, application=application)
-        assert s.value == "the-team"
+        s = models.ApplicationMetadata.objects.get(
+            key=deactivated_metadata.key, application=deactivated_metadata.application
+        )
+        assert s.value == "the-team-2"
 
     def test_not_my_metadata(self, client, logged_in_user, not_my_application, not_my_metadata):
         url = f"/applications/{not_my_application.public_identifier}/metadata/{not_my_metadata.key}/"

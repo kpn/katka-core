@@ -1,3 +1,4 @@
+from katka.auth import has_scope
 from katka.models import Application, Credential, Project, SCMPipelineRun, SCMRepository, SCMService, Team
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -34,27 +35,36 @@ class TeamRelatedField(PrimaryKeyRelated403Field):
     does_not_exist_message = "Team does not exist or you are not a member of its group"
 
     def get_queryset(self):
-        """Only get the teams that are connected to a group that the user is a member of"""
-        return Team.objects.filter(group__in=self.context["request"].user.groups.all(), deleted=False)
+        request = self.context["request"]
+        queryset = Team.objects.filter(deleted=False)
+        if not has_scope(request):
+            queryset = queryset.filter(group__in=request.user.groups.all())
+
+        return queryset
 
 
 class ProjectRelatedField(PrimaryKeyRelated403Field):
     does_not_exist_message = "Project does not exist or is not linked to your team"
 
     def get_queryset(self):
-        """Only get the projects that are connected to a team that the user is a member of"""
-        return Project.objects.filter(
-            team__group__in=self.context["request"].user.groups.all(), team__deleted=False, deleted=False
-        )
+        request = self.context["request"]
+        queryset = Project.objects.filter(team__deleted=False, deleted=False)
+        if not has_scope(request):
+            queryset = queryset.filter(team__group__in=request.user.groups.all())
+
+        return queryset
 
 
 class CredentialRelatedField(PrimaryKeyRelated403Field):
     does_not_exist_message = "Credential or team does not exist or is not linked to your group"
 
     def get_queryset(self):
-        return Credential.objects.filter(
-            team__group__in=self.context["request"].user.groups.all(), team__deleted=False, deleted=False,
-        )
+        request = self.context["request"]
+        queryset = Credential.objects.filter(team__deleted=False, deleted=False)
+        if not has_scope(request):
+            queryset = queryset.filter(team__group__in=request.user.groups.all())
+
+        return queryset
 
 
 class SCMServiceRelatedField(PrimaryKeyRelated403Field):
@@ -75,22 +85,26 @@ class ApplicationRelatedField(PrimaryKeyRelated403Field):
     does_not_exist_message = "Application does not exist or does not belong to your team"
 
     def get_queryset(self):
-        return Application.objects.filter(
-            project__team__group__in=self.context["request"].user.groups.all(),
-            project__team__deleted=False,
-            project__deleted=False,
-            deleted=False,
-        )
+        request = self.context["request"]
+        queryset = Application.objects.filter(project__team__deleted=False, project__deleted=False, deleted=False,)
+        if not has_scope(request):
+            queryset = queryset.filter(project__team__group__in=request.user.groups.all())
+
+        return queryset
 
 
 class SCMPipelineRunRelatedField(PrimaryKeyRelated403Field):
     does_not_exist_message = "SCM Pipeline Run does not exist or does not belong to your team"
 
     def get_queryset(self):
-        return SCMPipelineRun.objects.filter(
-            application__project__team__group__in=self.context["request"].user.groups.all(),
+        request = self.context["request"]
+        queryset = SCMPipelineRun.objects.filter(
             application__project__team__deleted=False,
             application__project__deleted=False,
             application__deleted=False,
             deleted=False,
         )
+        if not has_scope(request):
+            queryset = queryset.filter(application__project__team__group__in=request.user.groups.all())
+
+        return queryset

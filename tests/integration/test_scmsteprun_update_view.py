@@ -39,12 +39,6 @@ class TestUpdateStatusSCMStepRunView:
         assert p.status == "success"
         assert p.output == ""
 
-    def test_not_logged_in(self, client, scm_step_run):
-        url = f"/update-scm-step-run/{scm_step_run.public_identifier}/"
-        data = {"status": "success"}
-        response = client.patch(url, data, content_type="application/json")
-        assert response.status_code == 404
-
     def test_partial_update_without_ended_at_sets_ended_at(self, client, logged_in_user, another_scm_step_run):
         url = f"/update-scm-step-run/{another_scm_step_run.public_identifier}/"
 
