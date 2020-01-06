@@ -98,6 +98,7 @@ class Application(AuditedModel):
     name = models.CharField(max_length=100)
     project = models.ForeignKey(Project, on_delete=models.PROTECT)
     scm_repository = models.OneToOneField(SCMRepository, on_delete=models.PROTECT)
+    active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("project", "slug")
