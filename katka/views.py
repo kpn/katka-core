@@ -10,6 +10,7 @@ from katka.constants import (
     PIPELINE_STATUS_IN_PROGRESS,
     PIPELINE_STATUS_INITIALIZING,
     PIPELINE_STATUS_QUEUED,
+    PIPELINE_STATUS_SKIPPED,
     STEP_FINAL_STATUSES,
 )
 from katka.exceptions import AlreadyExists, ParentCommitMissing
@@ -147,10 +148,15 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
             raise AlreadyExists()
 
     def perform_create(self, serializer):
-        if not self._can_create(
-            serializer.validated_data["application"], serializer.validated_data.get("first_parent_hash")
-        ):
+        application = serializer.validated_data["application"]
+        if not self._can_create(application, serializer.validated_data.get("first_parent_hash")):
             raise ParentCommitMissing()
+
+        # Upon pipeline creation, set to skipped if the application is inactive and no status is provided
+        status = serializer.validated_data.get("status", None)
+        if status is None and not application.active:
+            serializer.validated_data["status"] = PIPELINE_STATUS_SKIPPED
+
         super().perform_create(serializer)
 
     def _ready_to_run(self, pipeline_run):

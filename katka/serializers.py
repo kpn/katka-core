@@ -67,7 +67,7 @@ class ApplicationSerializer(KatkaSerializer):
 
     class Meta:
         model = Application
-        fields = ("public_identifier", "slug", "name", "project", "scm_repository")
+        fields = ("public_identifier", "slug", "name", "project", "scm_repository", "active")
 
 
 class CredentialSerializer(KatkaSerializer):

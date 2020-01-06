@@ -73,11 +73,13 @@ class TestApplicationViewSet:
             "slug": "APPX",
             "project": project.public_identifier,
             "scm_repository": scm_repository.public_identifier,
+            "active": False,
         }
         response = client.put(url, data, content_type="application/json")
         assert response.status_code == 200
         a = models.Application.objects.get(pk=application.public_identifier)
         assert a.name == "Application X"
+        assert not a.active
 
     def test_update_deactivated_team(self, client, logged_in_user, deactivated_project, application):
         url = f"/applications/{application.public_identifier}/"
@@ -107,6 +109,7 @@ class TestApplicationViewSet:
             "slug": "APPX",
             "project": project.public_identifier,
             "scm_repository": scm_repository.public_identifier,
+            "active": False,
         }
         response = client.post(url, data=data, content_type="application/json")
         assert response.status_code == 201
