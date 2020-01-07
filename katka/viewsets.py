@@ -1,21 +1,34 @@
-from katka.auth import has_scope
+from katka.auth import AuthType, has_full_access_scope
 from katka.fields import username_on_model
 from rest_framework import mixins, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from .permissions import HasFullScope
+from .permissions import HasFullScope, IsGroupAuthenticated
 
 
 class UserOrScopeViewSet(GenericViewSet):
-    permission_classes = [IsAuthenticated | HasFullScope]
+    permission_classes = [IsGroupAuthenticated | HasFullScope]
+
+    def initialize_request(self, request, *args, **kwargs):
+        auth_type = AuthType.ANONYMOUS
+        if getattr(request, "user", None) is not None and not request.user.is_anonymous:
+            auth_type = AuthType.GROUPS
+        elif getattr(request, "scopes", None) is not None:
+            auth_type = AuthType.SCOPES
+
+        request.katka_auth_type = auth_type
+        return super().initialize_request(request, *args, **kwargs)
 
     def get_queryset(self):
         # do not call super().get_queryset() since it raises NotImplementedError
         queryset = self.model.objects.all()
-        if has_scope(self.request):
-            return queryset
+        if self.request.katka_auth_type is AuthType.SCOPES:
+            if has_full_access_scope(self.request):
+                return queryset
+
+            raise PermissionDenied("Missing full access scope")
 
         return self.get_user_restricted_queryset(queryset)
 
