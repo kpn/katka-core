@@ -1,4 +1,4 @@
-from katka.auth import has_scope
+from katka.auth import has_full_access_scope
 from katka.models import Application, Credential, Project, SCMPipelineRun, SCMRepository, SCMService, Team
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -37,7 +37,7 @@ class TeamRelatedField(PrimaryKeyRelated403Field):
     def get_queryset(self):
         request = self.context["request"]
         queryset = Team.objects.filter(deleted=False)
-        if not has_scope(request):
+        if not has_full_access_scope(request):
             queryset = queryset.filter(group__in=request.user.groups.all())
 
         return queryset
@@ -49,7 +49,7 @@ class ProjectRelatedField(PrimaryKeyRelated403Field):
     def get_queryset(self):
         request = self.context["request"]
         queryset = Project.objects.filter(team__deleted=False, deleted=False)
-        if not has_scope(request):
+        if not has_full_access_scope(request):
             queryset = queryset.filter(team__group__in=request.user.groups.all())
 
         return queryset
@@ -61,7 +61,7 @@ class CredentialRelatedField(PrimaryKeyRelated403Field):
     def get_queryset(self):
         request = self.context["request"]
         queryset = Credential.objects.filter(team__deleted=False, deleted=False)
-        if not has_scope(request):
+        if not has_full_access_scope(request):
             queryset = queryset.filter(team__group__in=request.user.groups.all())
 
         return queryset
@@ -87,7 +87,7 @@ class ApplicationRelatedField(PrimaryKeyRelated403Field):
     def get_queryset(self):
         request = self.context["request"]
         queryset = Application.objects.filter(project__team__deleted=False, project__deleted=False, deleted=False,)
-        if not has_scope(request):
+        if not has_full_access_scope(request):
             queryset = queryset.filter(project__team__group__in=request.user.groups.all())
 
         return queryset
@@ -104,7 +104,7 @@ class SCMPipelineRunRelatedField(PrimaryKeyRelated403Field):
             application__deleted=False,
             deleted=False,
         )
-        if not has_scope(request):
+        if not has_full_access_scope(request):
             queryset = queryset.filter(application__project__team__group__in=request.user.groups.all())
 
         return queryset

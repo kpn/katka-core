@@ -3,6 +3,10 @@ from django.db import models
 from katka.fields import AutoUsernameField
 
 
+class SimpleModel(models.Model):
+    pass
+
+
 class AlwaysUpdate(models.Model):
     field = AutoUsernameField()
 

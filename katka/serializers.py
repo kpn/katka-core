@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group
 
-from katka.auth import has_scope
+from katka.auth import has_full_access_scope
 from katka.constants import STEP_STATUS_CHOICES
 from katka.models import (
     Application,
@@ -41,7 +41,7 @@ class TeamSerializer(KatkaSerializer):
         fields = ("public_identifier", "slug", "name", "group")
 
     def validate_group(self, group):
-        if has_scope(self.context["request"]):
+        if has_full_access_scope(self.context["request"]):
             querystring = Group.objects
         else:
             querystring = self.context["request"].user.groups
