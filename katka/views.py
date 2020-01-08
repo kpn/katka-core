@@ -261,7 +261,7 @@ class SCMReleaseViewSet(FilterViewMixin, ReadOnlyAuditMixin):
     model = SCMRelease
     serializer_class = SCMReleaseSerializer
 
-    parameter_lookup_map = {"application": "scm_pipeline_runs__application"}
+    parameter_lookup_map = {"application": "scm_pipeline_runs__application", "pipeline_run": "scm_pipeline_runs"}
 
     def get_user_restricted_queryset(self, queryset):
         user_groups = self.request.user.groups.all()

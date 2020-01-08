@@ -55,6 +55,48 @@ class TestSCMReleaseViewSet:
         assert len(parsed[0]["scm_pipeline_runs"]) == 1
         assert UUID(parsed[0]["scm_pipeline_runs"][0]) == another_scm_pipeline_run.public_identifier
 
+    def test_filter_by_pipeline_run(
+        self,
+        client,
+        logged_in_user,
+        my_scm_pipeline_run,
+        my_scm_release,
+        another_scm_pipeline_run,
+        another_scm_release,
+        my_other_application,
+    ):
+        response = client.get("/scm-releases/" f"?pipeline_run={str(my_scm_pipeline_run.public_identifier)}")
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]["name"] == "Version 0.13.1"
+        assert parsed[0]["started_at"] is None
+        assert parsed[0]["ended_at"] is None
+        assert parsed[0]["status"] == "in progress"
+        assert len(parsed[0]["scm_pipeline_runs"]) == 1
+        assert UUID(parsed[0]["scm_pipeline_runs"][0]) == my_scm_pipeline_run.public_identifier
+
+    def test_filter_by_different_pipeline_run(
+        self,
+        client,
+        logged_in_user,
+        my_scm_pipeline_run,
+        my_scm_release,
+        another_scm_pipeline_run,
+        another_scm_release,
+        my_other_application,
+    ):
+        response = client.get("/scm-releases/" f"?pipeline_run={str(another_scm_pipeline_run.public_identifier)}")
+        assert response.status_code == 200
+        parsed = response.json()
+        assert len(parsed) == 1
+        assert parsed[0]["name"] == "Version 15.0"
+        assert parsed[0]["started_at"] is None
+        assert parsed[0]["ended_at"] is None
+        assert parsed[0]["status"] == "in progress"
+        assert len(parsed[0]["scm_pipeline_runs"]) == 1
+        assert UUID(parsed[0]["scm_pipeline_runs"][0]) == another_scm_pipeline_run.public_identifier
+
     def test_sorted_scm_releases_created_at(
         self,
         client,
