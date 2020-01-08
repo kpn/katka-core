@@ -20,7 +20,7 @@ def django_request():
 
 class TestUserOrScopeViewSet:
     def test_anonymous(self, django_request):
-        vs = ViewSet(django_request)
+        vs = ViewSet(django_request, None)
         vs.get_user_restricted_queryset = mock.Mock(return_value=[])
         qs = vs.get_queryset()
 
@@ -30,7 +30,7 @@ class TestUserOrScopeViewSet:
     def test_normal_user(self, django_request):
         django_request.user.is_authenticated = True
         django_request.user.is_anonymous = False
-        vs = ViewSet(django_request)
+        vs = ViewSet(django_request, None)
         vs.get_user_restricted_queryset = mock.Mock(return_value=[])
         qs = vs.get_queryset()
 
@@ -39,8 +39,7 @@ class TestUserOrScopeViewSet:
 
     @override_settings(SCOPE_FULL_ACCESS="katka")
     def test_missing_scopes(self, django_request):
-        django_request.scopes = ()
-        vs = ViewSet(django_request)
+        vs = ViewSet(django_request, ())
         vs.get_user_restricted_queryset = mock.Mock(return_value=[])
         with pytest.raises(PermissionDenied):
             vs.get_queryset()
@@ -49,9 +48,8 @@ class TestUserOrScopeViewSet:
 
     @override_settings(SCOPE_FULL_ACCESS="katka")
     def test_correct_scope(self, django_request):
-        django_request.scopes = ("katka",)
         django_request.user.is_authenticated = True
-        vs = ViewSet(django_request)
+        vs = ViewSet(django_request, ("katka",))
         vs.get_user_restricted_queryset = mock.Mock(return_value=[])
         qs = vs.get_queryset()
 
