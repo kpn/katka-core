@@ -12,14 +12,18 @@ class UserOrScopeViewSet(GenericViewSet):
     permission_classes = [IsGroupAuthenticated | HasFullScope]
 
     def initialize_request(self, request, *args, **kwargs):
+        drf_request = super().initialize_request(request, *args, **kwargs)
+
         auth_type = AuthType.ANONYMOUS
         if getattr(request, "user", None) is not None and not request.user.is_anonymous:
             auth_type = AuthType.GROUPS
         elif getattr(request, "scopes", None) is not None:
             auth_type = AuthType.SCOPES
 
+        # set it on the django HttpRequest
         request.katka_auth_type = auth_type
-        return super().initialize_request(request, *args, **kwargs)
+
+        return drf_request
 
     def get_queryset(self):
         # do not call super().get_queryset() since it raises NotImplementedError
