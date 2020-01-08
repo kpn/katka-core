@@ -15,9 +15,9 @@ class UserOrScopeViewSet(GenericViewSet):
         drf_request = super().initialize_request(request, *args, **kwargs)
 
         auth_type = AuthType.ANONYMOUS
-        if getattr(request, "user", None) is not None and not request.user.is_anonymous:
+        if getattr(drf_request, "user", None) is not None and not drf_request.user.is_anonymous:
             auth_type = AuthType.GROUPS
-        elif getattr(request, "scopes", None) is not None:
+        elif getattr(drf_request, "scopes", None) is not None:
             auth_type = AuthType.SCOPES
 
         # set it on the django HttpRequest
