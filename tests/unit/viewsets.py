@@ -15,8 +15,11 @@ class AlwaysAuthenticate:
 
     def authenticate(self, request, **kwargs):
         request.scopes = self.scopes
+        user = None
+        if self.scopes is None:
+            user = request._request.user
 
-        return None, "token"
+        return user, "token"
 
 
 class ViewSet(UserOrScopeViewSet):
