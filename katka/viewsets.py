@@ -15,13 +15,17 @@ class UserOrScopeViewSet(GenericViewSet):
         drf_request = super().initialize_request(request, *args, **kwargs)
 
         auth_type = AuthType.ANONYMOUS
+        user_identifier = "anonymous"
         if getattr(drf_request, "user", None) is not None and not drf_request.user.is_anonymous:
             auth_type = AuthType.GROUPS
+            user_identifier = request.user.username
         elif getattr(drf_request, "scopes", None) is not None:
             auth_type = AuthType.SCOPES
+            user_identifier = "system_user"
 
         # set it on the django HttpRequest
         request.katka_auth_type = auth_type
+        request.katka_user_identifier = user_identifier
 
         return drf_request
 
@@ -51,13 +55,13 @@ class UpdateAuditMixin(mixins.UpdateModelMixin, UserOrScopeViewSet):
     model = None
 
     def update(self, request, *args, **kwargs):
-        with username_on_model(self.model, request.user.username):
+        with username_on_model(self.model, request.katka_user_identifier):
             return super().update(request, *args, **kwargs)
 
 
 class CreateAuditMixin(mixins.CreateModelMixin, UserOrScopeViewSet):
     def create(self, request, *args, **kwargs):
-        with username_on_model(self.model, request.user.username):
+        with username_on_model(self.model, request.katka_user_identifier):
             return super().create(request, *args, **kwargs)
 
 
@@ -66,7 +70,7 @@ class DestroyAuditMixin(mixins.DestroyModelMixin, UserOrScopeViewSet):
         instance = self.get_object()
         instance.deleted = True
 
-        with username_on_model(self.model, request.user.username):
+        with username_on_model(self.model, request.katka_user_identifier):
             instance.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
