@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group, User
 from django.test import Client, modify_settings, override_settings
 
 import pytest
-from katka import models
+from katka import constants, models
 from katka.fields import username_on_model
 
 
@@ -438,6 +438,24 @@ do-release:
         scm_pipeline_run.save()
 
     return scm_pipeline_run
+
+
+@pytest.fixture
+def queued_scm_pipeline_run(my_scm_pipeline_run):
+    with username_on_model(models.SCMPipelineRun, "initial"):
+        my_scm_pipeline_run.status = constants.PIPELINE_STATUS_QUEUED
+        my_scm_pipeline_run.save()
+
+    return my_scm_pipeline_run
+
+
+@pytest.fixture
+def skipped_scm_pipeline_run(my_scm_pipeline_run):
+    with username_on_model(models.SCMPipelineRun, "initial"):
+        my_scm_pipeline_run.status = constants.PIPELINE_STATUS_SKIPPED
+        my_scm_pipeline_run.save()
+
+    return my_scm_pipeline_run
 
 
 @pytest.fixture
