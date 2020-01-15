@@ -97,43 +97,32 @@ class TestSCMReleaseViewSet:
         assert len(parsed[0]["scm_pipeline_runs"]) == 1
         assert UUID(parsed[0]["scm_pipeline_runs"][0]) == another_scm_pipeline_run.public_identifier
 
-    def test_sorted_scm_releases_created_at(
-        self,
-        client,
-        logged_in_user,
-        my_scm_pipeline_run,
-        my_scm_release,
-        another_scm_pipeline_run,
-        another_scm_release,
-        another_another_scm_pipeline_run,
-    ):
+    def test_sorted_scm_releases_created_at(self, client, logged_in_user, multiple_scm_releases):
         response = client.get("/scm-releases/")
         assert response.status_code == 200
         parsed = response.json()
         assert len(parsed) == 2
         # we can only test by the name since `created_at` is not an response field
-        # it is assumed that Version 15.0 is created after Version 0.13.1 in the fixtures
-        assert parsed[0]["name"] == "Version 15.0"
-        assert parsed[1]["name"] == "Version 0.13.1"
-        assert parsed[0]["scm_pipeline_runs"][0] == str(another_another_scm_pipeline_run.public_identifier)
-        assert parsed[0]["scm_pipeline_runs"][1] == str(another_scm_pipeline_run.public_identifier)
+        # New was created after old in the fixtures
+        assert parsed[0]["name"] == "New"
+        assert parsed[1]["name"] == "Old"
 
     def test_filter_by_application_multiple_pipeline_runs(
         self,
         client,
         logged_in_user,
-        my_scm_pipeline_run,
-        my_scm_release,
         another_scm_pipeline_run,
         another_scm_release,
         another_another_scm_pipeline_run,
+        different_scm_pipeline_run,
         my_other_application,
+        multiple_scm_releases,
     ):
         response = client.get("/scm-releases/" f"?application={str(my_other_application.public_identifier)}")
         assert response.status_code == 200
         parsed = response.json()
-        assert len(parsed) == 1
-        assert parsed[0]["name"] == "Version 15.0"
+        assert len(parsed) == 3  # two extra releases from `multiple_scm_releases`
+        assert parsed[0]["name"] == "New"
         assert parsed[0]["started_at"] is None
         assert parsed[0]["ended_at"] is None
         assert parsed[0]["status"] == "in progress"
@@ -141,10 +130,12 @@ class TestSCMReleaseViewSet:
         assert UUID(parsed[0]["scm_pipeline_runs"][0]) in [
             another_scm_pipeline_run.public_identifier,
             another_another_scm_pipeline_run.public_identifier,
+            different_scm_pipeline_run.public_identifier,
         ]
         assert UUID(parsed[0]["scm_pipeline_runs"][1]) in [
             another_scm_pipeline_run.public_identifier,
             another_another_scm_pipeline_run.public_identifier,
+            different_scm_pipeline_run.public_identifier,
         ]
 
     def test_filtered_list_non_existing_pipeline_run(
@@ -156,7 +147,7 @@ class TestSCMReleaseViewSet:
         parsed = response.json()
         assert len(parsed) == 0
 
-    def test_list_excludes_inactive(self, client, logged_in_user, deactivated_scm_release):
+    def test_list_excludes_inactive(self, client, logged_in_user, deactivated_scm_release, another_scm_release):
         response = client.get("/scm-releases/")
         assert response.status_code == 200
         parsed = response.json()
@@ -174,12 +165,17 @@ class TestSCMReleaseViewSet:
         assert UUID(parsed["scm_pipeline_runs"][0]) == my_scm_pipeline_run.public_identifier
 
     def test_get_with_multiple_pipeline_runs(
-        self, client, logged_in_user, another_scm_pipeline_run, another_another_scm_pipeline_run, another_scm_release
+        self,
+        client,
+        logged_in_user,
+        another_scm_pipeline_run,
+        another_another_scm_pipeline_run,
+        scm_releases_with_multi_pipeline_runs,
     ):
-        response = client.get(f"/scm-releases/{another_scm_release.public_identifier}/")
+        response = client.get(f"/scm-releases/{scm_releases_with_multi_pipeline_runs.public_identifier}/")
         assert response.status_code == 200
         parsed = response.json()
-        assert parsed["name"] == "Version 15.0"
+        assert parsed["name"] == "New"
         assert parsed["started_at"] is None
         assert parsed["ended_at"] is None
         assert parsed["status"] == "in progress"
