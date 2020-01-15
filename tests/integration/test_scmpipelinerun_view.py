@@ -77,18 +77,19 @@ class TestSCMPipelineRunViewSet:
         my_other_application,
         another_scm_pipeline_run,
         another_scm_release,
-        another_another_scm_pipeline_run,
+        different_scm_pipeline_run,
+        scm_release_with_multi_pipelines,
     ):
 
-        response = client.get("/scm-pipeline-runs/?release=" + str(another_scm_release.public_identifier))
+        response = client.get("/scm-pipeline-runs/?release=" + str(scm_release_with_multi_pipelines.public_identifier))
         assert response.status_code == 200
         parsed = response.json()
         assert len(parsed) == 2
-        assert parsed[0]["commit_hash"] == another_another_scm_pipeline_run.commit_hash
+        assert parsed[0]["commit_hash"] == different_scm_pipeline_run.commit_hash
         assert parsed[1]["commit_hash"] == another_scm_pipeline_run.commit_hash
         assert UUID(parsed[1]["application"]) == my_other_application.public_identifier
         assert UUID(parsed[1]["public_identifier"]) == another_scm_pipeline_run.public_identifier
-        assert len(parsed[1]["scmrelease_set"]) == 1
+        assert len(parsed[0]["scmrelease_set"]) == 1
 
     def test_filtered_by_release_over_scmrelease(
         self,
@@ -334,7 +335,9 @@ class TestSCMPipelineRunRunNextPipeline:
         assert p.status == "initializing"
         assert caplog.messages == []
 
-    def test_non_queued(self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run, caplog):
+    def test_non_queued(
+        self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run, my_scm_release, caplog
+    ):
         url = f"/scm-pipeline-runs/{scm_pipeline_run.public_identifier}/"
         data = {"status": "success"}
         with username_on_model(models.SCMPipelineRun, "test"):
@@ -349,7 +352,9 @@ class TestSCMPipelineRunRunNextPipeline:
             f"Next pipeline {next_scm_pipeline_run.pk} is not queued, " 'it has status "in progress", not updating'
         )
 
-    def test_queued(self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run, caplog):
+    def test_queued(
+        self, client, logged_in_user, application, scm_pipeline_run, next_scm_pipeline_run, my_scm_release, caplog
+    ):
         url = f"/scm-pipeline-runs/{scm_pipeline_run.public_identifier}/"
         data = {"status": "success"}
         with username_on_model(models.SCMPipelineRun, "test"):

@@ -270,6 +270,17 @@ do-release:
 
 
 @pytest.fixture
+def scm_release_with_pipeline_run(scm_pipeline_run):
+    with username_on_model(models.SCMRelease, "initial"):
+        scm_release = models.SCMRelease.objects.create()
+        scm_release.scm_pipeline_runs.add(scm_pipeline_run)
+        scm_release.name = "Version 15.0"
+        scm_release.save()
+
+    return scm_release
+
+
+@pytest.fixture
 def scm_pipeline_run_with_no_open_release(
     application, other_project, other_scm_repository, scm_pipeline_run, scm_step_run_success_list_with_start_end_tags
 ):

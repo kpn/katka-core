@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from katka.constants import (
+    PIPELINE_STATUS_IN_PROGRESS,
     PIPELINE_STATUS_INITIALIZING,
     PIPELINE_STATUS_QUEUED,
     PIPELINE_STATUS_SKIPPED,
@@ -70,7 +71,7 @@ def create_close_releases(sender, **kwargs):
     if pipeline.status == PIPELINE_STATUS_SKIPPED:
         return
 
-    if kwargs["created"] is True:
+    if pipeline.status == PIPELINE_STATUS_IN_PROGRESS:
         create_release_if_necessary(pipeline)
     else:
         close_release_if_pipeline_finished(pipeline)

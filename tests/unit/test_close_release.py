@@ -37,7 +37,7 @@ class TestCloseRelease:
         else:
             assert release.ended_at is None
 
-    def test_do_nothing_if_pipeline_run_status_not_finished(self, scm_pipeline_run):
+    def test_do_nothing_if_pipeline_run_status_not_finished(self, scm_pipeline_run, scm_release_with_pipeline_run):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
         scm_pipeline_run.status = constants.PIPELINE_STATUS_IN_PROGRESS
@@ -47,7 +47,9 @@ class TestCloseRelease:
         # nothing has changed
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
-    def test_all_steps_are_success_but_no_start_tag_found(self, scm_pipeline_run, scm_step_run_success_list):
+    def test_all_steps_are_success_but_no_start_tag_found(
+        self, scm_pipeline_run, scm_release_with_pipeline_run, scm_step_run_success_list
+    ):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
         scm_pipeline_run.status = constants.PIPELINE_STATUS_SUCCESS
@@ -57,7 +59,7 @@ class TestCloseRelease:
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
     def test_all_steps_are_success_but_no_end_tag_found(
-        self, scm_pipeline_run, scm_step_run_success_list_with_start_tag
+        self, scm_pipeline_run, scm_release_with_pipeline_run, scm_step_run_success_list_with_start_tag
     ):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
@@ -73,7 +75,7 @@ class TestCloseRelease:
         assert result_status is None
 
     def test_all_steps_are_success_with_start_and_end_tag(
-        self, scm_pipeline_run, scm_step_run_success_list_with_start_end_tags
+        self, scm_release_with_pipeline_run, scm_pipeline_run, scm_step_run_success_list_with_start_end_tags
     ):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
@@ -85,7 +87,7 @@ class TestCloseRelease:
         self._assert_release_has_start_and_end_date("2018-11-11 08:45:30+00:00", "2018-11-11 09:15:41+00:00")
 
     def test_one_failed_step_between_start_end_tags(
-        self, scm_pipeline_run, scm_step_run_one_failed_step_list_with_start_end_tags
+        self, scm_pipeline_run, scm_release_with_pipeline_run, scm_step_run_one_failed_step_list_with_start_end_tags
     ):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
@@ -96,7 +98,9 @@ class TestCloseRelease:
         self._assert_release_has_status(constants.RELEASE_STATUS_FAILED)
         self._assert_release_has_start_and_end_date("2018-11-11 08:45:30+00:00", "2018-11-11 09:15:41+00:00")
 
-    def test_one_failed_step_before_start_tag(self, scm_pipeline_run, scm_step_run_one_failed_step_before_start_tag):
+    def test_one_failed_step_before_start_tag(
+        self, scm_pipeline_run, scm_release_with_pipeline_run, scm_step_run_one_failed_step_before_start_tag
+    ):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
         scm_pipeline_run.status = constants.PIPELINE_STATUS_FAILED
@@ -106,7 +110,9 @@ class TestCloseRelease:
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
         self._assert_release_has_start_and_end_date(None, None)
 
-    def test_one_failed_step_after_end_tag(self, scm_pipeline_run, scm_step_run_one_failed_step_after_end_tag):
+    def test_one_failed_step_after_end_tag(
+        self, scm_pipeline_run, scm_release_with_pipeline_run, scm_step_run_one_failed_step_after_end_tag
+    ):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
         scm_pipeline_run.status = constants.PIPELINE_STATUS_FAILED
@@ -115,7 +121,9 @@ class TestCloseRelease:
         self._assert_release_success_with_name("1.0.0")
         self._assert_release_has_start_and_end_date("2018-11-11 08:45:30+00:00", "2018-11-11 09:15:41+00:00")
 
-    def test_fails_if_version_not_present_in_context(self, scm_pipeline_run, scm_step_run_without_version_output):
+    def test_fails_if_version_not_present_in_context(
+        self, scm_pipeline_run, scm_release_with_pipeline_run, scm_step_run_without_version_output
+    ):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
         scm_pipeline_run.status = constants.PIPELINE_STATUS_SUCCESS
@@ -125,7 +133,9 @@ class TestCloseRelease:
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
         self._assert_release_has_start_and_end_date(None, None)
 
-    def test_output_with_broken_json_does_not_break_release(self, scm_pipeline_run, scm_step_run_with_broken_output):
+    def test_output_with_broken_json_does_not_break_release(
+        self, scm_pipeline_run, scm_release_with_pipeline_run, scm_step_run_with_broken_output
+    ):
         self._assert_release_has_status(constants.RELEASE_STATUS_IN_PROGRESS)
 
         scm_pipeline_run.status = constants.PIPELINE_STATUS_SUCCESS

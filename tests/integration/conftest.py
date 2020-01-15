@@ -504,6 +504,28 @@ do-release:
 
 
 @pytest.fixture
+def different_scm_pipeline_run(my_other_application):
+    pipeline_yaml = """stages:
+  - release
+
+do-release:
+  stage: release
+"""
+    scm_pipeline_run = models.SCMPipelineRun(
+        application=my_other_application,
+        pipeline_yaml=pipeline_yaml,
+        steps_total=5,
+        commit_hash="9234567A143AEC5156FD1444A017A3213654321",
+        # first_parent_hash does not link to existing hash
+        first_parent_hash="40000000000000000000000000000000000000F",
+    )
+    with username_on_model(models.SCMPipelineRun, "initial"):
+        scm_pipeline_run.save()
+
+    return scm_pipeline_run
+
+
+@pytest.fixture
 def deactivated_scm_pipeline_run(application):
     scm_pipeline_run = models.SCMPipelineRun(
         application=application,
@@ -598,9 +620,10 @@ def scm_step_run(not_my_scm_step_run, my_scm_step_run, another_scm_step_run, dea
 
 @pytest.fixture
 def not_my_scm_release(not_my_scm_pipeline_run):
-    scm_release = models.SCMRelease.objects.filter(scm_pipeline_runs__pk__exact=not_my_scm_pipeline_run.pk).first()
 
     with username_on_model(models.SCMRelease, "initial"):
+        scm_release = models.SCMRelease.objects.create()
+        scm_release.scm_pipeline_runs.add(not_my_scm_pipeline_run)
         scm_release.name = "Version 1.2.1"
         scm_release.save()
 
@@ -609,9 +632,10 @@ def not_my_scm_release(not_my_scm_pipeline_run):
 
 @pytest.fixture
 def my_scm_release(my_scm_pipeline_run):
-    scm_release = models.SCMRelease.objects.filter(scm_pipeline_runs__pk__exact=my_scm_pipeline_run.pk).first()
 
     with username_on_model(models.SCMRelease, "initial"):
+        scm_release = models.SCMRelease.objects.create()
+        scm_release.scm_pipeline_runs.add(my_scm_pipeline_run)
         scm_release.name = "Version 0.13.1"
         scm_release.save()
 
@@ -630,10 +654,53 @@ def deactivated_scm_release(deactivated_scm_pipeline_run):
 
 @pytest.fixture
 def another_scm_release(another_scm_pipeline_run):
-    scm_release = models.SCMRelease.objects.filter(scm_pipeline_runs__pk__exact=another_scm_pipeline_run.pk).first()
 
     with username_on_model(models.SCMRelease, "initial"):
+        scm_release = models.SCMRelease.objects.create()
+        scm_release.scm_pipeline_runs.add(another_scm_pipeline_run)
         scm_release.name = "Version 15.0"
+        scm_release.save()
+
+    return scm_release
+
+
+@pytest.fixture
+def scm_release_with_multi_pipelines(different_scm_pipeline_run, another_scm_pipeline_run):
+    with username_on_model(models.SCMRelease, "initial"):
+        scm_release = models.SCMRelease.objects.create()
+        scm_release.scm_pipeline_runs.add(another_scm_pipeline_run)
+        scm_release.scm_pipeline_runs.add(different_scm_pipeline_run)
+        scm_release.name = "Version 16.0"
+        scm_release.save()
+    return scm_release
+
+
+@pytest.fixture
+def scm_releases_with_multi_pipeline_runs(another_scm_pipeline_run, another_another_scm_pipeline_run):
+
+    with username_on_model(models.SCMRelease, "initial"):
+        scm_release = models.SCMRelease.objects.create()
+        scm_release.scm_pipeline_runs.add(another_scm_pipeline_run)
+        scm_release.scm_pipeline_runs.add(another_another_scm_pipeline_run)
+        scm_release.name = "New"
+        scm_release.save()
+
+    return scm_release
+
+
+@pytest.fixture
+def multiple_scm_releases(another_scm_pipeline_run, another_another_scm_pipeline_run, different_scm_pipeline_run):
+    # I want to make sure they are created in sequence
+    with username_on_model(models.SCMRelease, "initial"):
+        scm_release = models.SCMRelease.objects.create()
+        scm_release.scm_pipeline_runs.add(another_scm_pipeline_run)
+        scm_release.name = "Old"
+        scm_release.save()
+
+        scm_release = models.SCMRelease.objects.create()
+        scm_release.scm_pipeline_runs.add(another_another_scm_pipeline_run)
+        scm_release.scm_pipeline_runs.add(different_scm_pipeline_run)
+        scm_release.name = "New"
         scm_release.save()
 
     return scm_release
