@@ -219,6 +219,17 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
         return queryset.filter(application__project__team__group__in=user_groups)
 
 
+class QueuedSCMPipelineRunViewSet(FilterViewMixin, ReadOnlyAuditMixin):
+    model = SCMPipelineRun
+    serializer_class = SCMPipelineRunSerializer
+
+    def get_user_restricted_queryset(self, queryset):
+        user_groups = self.request.user.groups.all()
+        return queryset.filter(
+            application__project__team__group__in=user_groups, status=PIPELINE_STATUS_QUEUED, scmrelease__isnull=True
+        )
+
+
 def pre_validate_steprun_update(serializer):
     """In case of an update to the status which sets the step to a final status, ensure the 'ended_at'
        field is set.
