@@ -284,6 +284,7 @@ class ApplicationMetadataViewSet(AuditViewSet):
     model = ApplicationMetadata
     serializer_class = ApplicationMetadataSerializer
     lookup_field = "key"
+    lookup_value_regex = r"[^/]+"
 
     def get_queryset(self):
         kwargs = {
