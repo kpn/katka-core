@@ -25,6 +25,7 @@ STEP_STATUS_NOT_STARTED = "not started"
 STEP_STATUS_IN_PROGRESS = "in progress"
 STEP_STATUS_WAITING = "waiting"  # A step cannot proceed until some action is completed
 STEP_STATUS_SKIPPED = "skipped"  # A step is skipped due to some conditional
+STEP_STATUS_ABORTED = "aborted"  # A step was manually aborted
 STEP_STATUS_FAILED = "failed"
 STEP_STATUS_SUCCESS = "success"
 
@@ -33,6 +34,7 @@ STEP_STATUS_CHOICES = (
     (STEP_STATUS_IN_PROGRESS, STEP_STATUS_IN_PROGRESS),
     (STEP_STATUS_WAITING, STEP_STATUS_WAITING),
     (STEP_STATUS_SKIPPED, STEP_STATUS_SKIPPED),
+    (STEP_STATUS_ABORTED, STEP_STATUS_ABORTED),
     (STEP_STATUS_FAILED, STEP_STATUS_FAILED),
     (STEP_STATUS_SUCCESS, STEP_STATUS_SUCCESS),
 )
