@@ -739,6 +739,15 @@ def my_metadata(my_application):
 
 
 @pytest.fixture
+def my_metadata_with_dot_in_key(my_application):
+    meta = models.ApplicationMetadata(key="rfc.ci", value="the-team", application=my_application)
+    with username_on_model(models.ApplicationMetadata, "initial"):
+        meta.save()
+
+    return meta
+
+
+@pytest.fixture
 def deactivated_metadata(deactivated_application):
     metadata = models.ApplicationMetadata(key="ci", value="the-team-2", application=deactivated_application)
     metadata.deleted = True

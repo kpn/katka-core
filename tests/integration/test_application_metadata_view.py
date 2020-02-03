@@ -33,6 +33,15 @@ class TestApplicationMetadataGet:
         assert metadata["value"] == "the-team"
         assert UUID(metadata["application"]) == application.public_identifier
 
+    def test_get_key_with_dot(self, client, logged_in_user, application, my_metadata_with_dot_in_key):
+        url = f"/applications/{application.public_identifier}/metadata/{my_metadata_with_dot_in_key.key}/"
+        response = client.get(url)
+        assert response.status_code == 200
+        metadata = response.json()
+        assert metadata["key"] == "rfc.ci"
+        assert metadata["value"] == "the-team"
+        assert UUID(metadata["application"]) == application.public_identifier
+
     def test_non_existent_application(self, client, logged_in_user, application, metadata):
         url = f"/applications/00000000-0000-0000-0000-000000000000/metadata/{metadata.key}/"
         response = client.get(url)
@@ -66,6 +75,13 @@ class TestApplicationMetadataDelete:
         response = client.delete(url)
         assert response.status_code == 204
         s = models.ApplicationMetadata.objects.get(key=metadata.key, application=application)
+        assert s.deleted is True
+
+    def test_delete_key_with_dot(self, client, logged_in_user, application, my_metadata_with_dot_in_key):
+        url = f"/applications/{application.public_identifier}/metadata/{my_metadata_with_dot_in_key.key}/"
+        response = client.delete(url)
+        assert response.status_code == 204
+        s = models.ApplicationMetadata.objects.get(key=my_metadata_with_dot_in_key.key, application=application)
         assert s.deleted is True
 
     def test_non_existent(self, client, logged_in_user, application, metadata):
@@ -137,6 +153,14 @@ class TestApplicationMetadataUpdate:
         assert response.status_code == 404
         s = models.ApplicationMetadata.objects.get(key=not_my_metadata.key, application=not_my_application)
         assert s.value == "the-team-not-mine"
+
+    def test_update_key_with_dot(self, client, logged_in_user, application, my_metadata_with_dot_in_key):
+        url = f"/applications/{application.public_identifier}/metadata/{my_metadata_with_dot_in_key.key}/"
+        data = {"key": my_metadata_with_dot_in_key.key, "value": "new value"}
+        response = client.put(url, data, content_type="application/json")
+        assert response.status_code == 200
+        s = models.ApplicationMetadata.objects.get(key=my_metadata_with_dot_in_key.key, application=application)
+        assert s.value == "new value"
 
 
 @pytest.mark.django_db
