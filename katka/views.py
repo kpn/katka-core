@@ -1,19 +1,16 @@
 import logging
-from datetime import datetime
 
 from django.conf import settings
 from django.db import IntegrityError
 
-import pytz
 from katka.constants import (
     PIPELINE_FINAL_STATUSES,
     PIPELINE_STATUS_IN_PROGRESS,
     PIPELINE_STATUS_INITIALIZING,
     PIPELINE_STATUS_QUEUED,
     PIPELINE_STATUS_SKIPPED,
-    STEP_FINAL_STATUSES,
 )
-from katka.exceptions import AlreadyExists, ParentCommitMissing
+from katka.exceptions import AlreadyExists, ParentCommitMissing, PipelineRunnerError
 from katka.models import (
     Application,
     ApplicationMetadata,
@@ -42,6 +39,7 @@ from katka.serializers import (
     TeamSerializer,
 )
 from katka.viewsets import AuditViewSet, FilterViewMixin, ReadOnlyAuditMixin, UpdateAuditMixin
+from requests import HTTPError
 
 log = logging.getLogger(__name__)
 
@@ -230,25 +228,9 @@ class QueuedSCMPipelineRunViewSet(FilterViewMixin, ReadOnlyAuditMixin):
         )
 
 
-def pre_validate_steprun_update(serializer):
-    """In case of an update to the status which sets the step to a final status, ensure the 'ended_at'
-       field is set.
-    """
-    if (
-        "status" in serializer.validated_data
-        and serializer.validated_data["status"] in STEP_FINAL_STATUSES
-        and "ended_at" not in serializer.validated_data
-    ):
-        serializer.validated_data["ended_at"] = datetime.now(tz=pytz.timezone(settings.TIME_ZONE))
-
-
 class SCMStepRunViewSet(FilterViewMixin, AuditViewSet):
     model = SCMStepRun
     serializer_class = SCMStepRunSerializer
-
-    def perform_update(self, serializer):
-        pre_validate_steprun_update(serializer)
-        serializer.save()
 
     def get_user_restricted_queryset(self, queryset):
         user_groups = self.request.user.groups.all()
@@ -260,8 +242,25 @@ class SCMStepRunUpdateStatusView(UpdateAuditMixin):
     serializer_class = SCMStepRunUpdateSerializer
 
     def perform_update(self, serializer):
-        pre_validate_steprun_update(serializer)
-        serializer.save()
+        # instead of saving the serializer, we call a remote endpoint
+        self.call_endpoint(serializer)
+
+    def call_endpoint(self, serializer):
+        data = {
+            "user": self.request.user.username,
+            "step": {
+                "public_identifier": serializer.instance.public_identifier,
+                "status": serializer.validated_data["status"],
+            },
+        }
+        session = settings.PIPELINE_RUNNER_SESSION
+        response = session.post(settings.PIPELINE_UPDATE_STEP_URL, json=data)
+
+        try:
+            response.raise_for_status()
+        except HTTPError:
+            log.exception("Failed to update the step via the pipeline runner")
+            raise PipelineRunnerError
 
     def get_user_restricted_queryset(self, queryset):
         user_groups = self.request.user.groups.all()
