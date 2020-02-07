@@ -112,7 +112,7 @@ def _get_current_release(pipeline):
     )
     release = None
     if len(releases) == 0:
-        log.error(f"No open releases found for application {pipeline.application.pk}")
+        log.debug(f"No open releases found for application {pipeline.application.pk}")
     elif len(releases) > 1:
         log.error(f"Multiple open releases found for application {pipeline.application.pk}, picking newest")
         release = releases.order_by("-created_at").first()

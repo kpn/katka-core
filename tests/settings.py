@@ -48,5 +48,6 @@ USE_TZ = True
 
 REQUESTS_CA_BUNDLE = "/etc/ssl/certs/ca-certificates.crt"
 
-PIPELINE_CHANGE_NOTIFICATION_SESSION = session.Session()
+PIPELINE_RUNNER_SESSION = session.Session()
 PIPELINE_CHANGE_NOTIFICATION_URL = None
+PIPELINE_UPDATE_STEP_URL = None

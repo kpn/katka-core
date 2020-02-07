@@ -54,7 +54,7 @@ def send_pipeline_change_notification(sender, **kwargs):
         # being run, do not notify.
         return
 
-    session = settings.PIPELINE_CHANGE_NOTIFICATION_SESSION
+    session = settings.PIPELINE_RUNNER_SESSION
     response = session.post(
         settings.PIPELINE_CHANGE_NOTIFICATION_URL, json={"public_identifier": str(pipeline.public_identifier)}
     )

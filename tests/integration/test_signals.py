@@ -31,7 +31,7 @@ class TestSCMPipelineRunSignals:
     def test_notify_post(self, scm_step_run, my_scm_pipeline_run):
         session = mock.MagicMock()
         overrides = {
-            "PIPELINE_CHANGE_NOTIFICATION_SESSION": session,
+            "PIPELINE_RUNNER_SESSION": session,
             "PIPELINE_CHANGE_NOTIFICATION_URL": "http://override-url/",
         }
         with override_settings(**overrides):
@@ -64,7 +64,7 @@ class TestSCMPipelineRunSignals:
     def test_initializing(self, scm_step_run, my_scm_pipeline_run):
         session = mock.MagicMock()
         overrides = {
-            "PIPELINE_CHANGE_NOTIFICATION_SESSION": session,
+            "PIPELINE_RUNNER_SESSION": session,
             "PIPELINE_CHANGE_NOTIFICATION_URL": "http://override-url/",
         }
         with override_settings(**overrides):
@@ -81,7 +81,7 @@ class TestSCMPipelineRunSignals:
     def test_send_on_create_pipeline(self, application, caplog):
         session = mock.MagicMock()
         overrides = {
-            "PIPELINE_CHANGE_NOTIFICATION_SESSION": session,
+            "PIPELINE_RUNNER_SESSION": session,
             "PIPELINE_CHANGE_NOTIFICATION_URL": "http://override-url/",
         }
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
@@ -112,7 +112,7 @@ class TestSCMPipelineRunSignals:
         mock_response.raise_for_status.side_effect = HTTPError("Error", 404)
         session.post.return_value = mock_response
         overrides = {
-            "PIPELINE_CHANGE_NOTIFICATION_SESSION": session,
+            "PIPELINE_RUNNER_SESSION": session,
             "PIPELINE_CHANGE_NOTIFICATION_URL": "http://override-url/",
         }
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
@@ -138,7 +138,7 @@ class TestReleaseSignal:
         before = SCMRelease.objects.count()
 
         session = mock.MagicMock()
-        overrides = {"PIPELINE_CHANGE_NOTIFICATION_SESSION": session}
+        overrides = {"PIPELINE_RUNNER_SESSION": session}
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
             pipeline_run = SCMPipelineRun.objects.create(application=application)
 
@@ -155,7 +155,7 @@ class TestReleaseSignal:
 
     def test_release_not_created_when_updating(self, my_scm_pipeline_run):
         session = mock.MagicMock()
-        overrides = {"PIPELINE_CHANGE_NOTIFICATION_SESSION": session}
+        overrides = {"PIPELINE_RUNNER_SESSION": session}
 
         before = SCMRelease.objects.count()
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
@@ -175,7 +175,7 @@ class TestReleaseSignal:
         before = release.scm_pipeline_runs.count()
 
         session = mock.MagicMock()
-        overrides = {"PIPELINE_CHANGE_NOTIFICATION_SESSION": session}
+        overrides = {"PIPELINE_RUNNER_SESSION": session}
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
             pipeline_run = SCMPipelineRun.objects.create(application=application)
             pipeline_run.status = constants.PIPELINE_STATUS_IN_PROGRESS
@@ -189,7 +189,7 @@ class TestReleaseSignal:
         before = SCMRelease.objects.count()
 
         session = mock.MagicMock()
-        overrides = {"PIPELINE_CHANGE_NOTIFICATION_SESSION": session}
+        overrides = {"PIPELINE_RUNNER_SESSION": session}
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
             pipeline_run = SCMPipelineRun.objects.create(application=application, status="skipped")
 
@@ -201,7 +201,7 @@ class TestReleaseSignal:
         before = SCMRelease.objects.count()
 
         session = mock.MagicMock()
-        overrides = {"PIPELINE_CHANGE_NOTIFICATION_SESSION": session}
+        overrides = {"PIPELINE_RUNNER_SESSION": session}
         with override_settings(**overrides), username_on_model(SCMRelease, "signal_tester"):
             my_scm_release.status = "closed"
             my_scm_release.save()
@@ -237,7 +237,7 @@ class TestReleaseSignal:
     def test_pick_newest_on_duplicate_open_releases(self, application, my_scm_release, my_scm_pipeline_run, caplog):
         """This should not happen, but if it happens, handle it gracefully"""
         session = mock.MagicMock()
-        overrides = {"PIPELINE_CHANGE_NOTIFICATION_SESSION": session}
+        overrides = {"PIPELINE_RUNNER_SESSION": session}
         with override_settings(**overrides), username_on_model(SCMRelease, "signal_tester"):
             open_release_2 = SCMRelease.objects.create()
             open_release_2.scm_pipeline_runs.add(my_scm_pipeline_run)

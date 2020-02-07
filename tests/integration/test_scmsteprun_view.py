@@ -3,7 +3,6 @@ from uuid import UUID
 from django.utils.dateparse import parse_datetime
 
 import pytest
-from freezegun import freeze_time
 from katka import models
 
 
@@ -122,20 +121,6 @@ class TestSCMStepRunViewSet:
         assert p.output == "Step executed."
         assert p.started_at == parse_datetime("2019-01-25T02:02:03+0300")
         assert p.ended_at == parse_datetime("2019-02-13T02:03:04Z")
-
-    def test_partial_update_sets_ended(self, client, logged_in_user, another_scm_step_run):
-        url = f"/scm-step-runs/{another_scm_step_run.public_identifier}/"
-        data = {"status": "success"}
-
-        p = models.SCMStepRun.objects.get(pk=another_scm_step_run.public_identifier)
-        assert p.ended_at is None
-
-        with freeze_time("2019-05-04 11:13:14"):
-            response = client.patch(url, data, content_type="application/json")
-
-        assert response.status_code == 200
-        p = models.SCMStepRun.objects.get(pk=another_scm_step_run.public_identifier)
-        assert p.ended_at == parse_datetime("2019-05-04T11:13:14+0000")
 
     def test_create(self, client, logged_in_user, scm_pipeline_run, scm_step_run):
         initial_count = models.SCMStepRun.objects.count()
