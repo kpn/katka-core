@@ -21,7 +21,7 @@ class TestUpdateStatusSCMStepRunView:
         assert len(session.method_calls) == 1
         post = session.method_calls[0][2]["json"]
         assert post["user"] == "test_user"
-        assert post["step"]["public_identifier"] == scm_step_run.public_identifier
+        assert post["step"]["public_identifier"] == str(scm_step_run.public_identifier)
         assert post["step"]["status"] == "success"
 
     def test_partial_update_no_param(self, client, logged_in_user, scm_step_run):

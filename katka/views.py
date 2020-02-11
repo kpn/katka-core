@@ -249,7 +249,7 @@ class SCMStepRunUpdateStatusView(UpdateAuditMixin):
         data = {
             "user": self.request.user.username,
             "step": {
-                "public_identifier": serializer.instance.public_identifier,
+                "public_identifier": str(serializer.instance.public_identifier),
                 "status": serializer.validated_data["status"],
             },
         }
