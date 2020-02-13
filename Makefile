@@ -1,6 +1,6 @@
 # This Makefile requires the following commands to be available:
 # * virtualenv
-# * python3.7.1
+# * python3.8
 # * docker
 
 IMAGE=katka-core
@@ -10,7 +10,7 @@ REQUIREMENTS_BASE:=requirements/requirements-base.txt
 REQUIREMENTS_TEST:=requirements/requirements-testing.txt
 REQUIREMENTS_TXT:=requirements.txt
 
-PYTHON_VERSION=python3.7
+PYTHON_VERSION=python3.8
 
 BLACK="black"
 FLAKE8="flake8"
@@ -27,7 +27,7 @@ ifneq ($(IN_DOCKER), 1)
   ISORT="venv/bin/isort"
   PIP="venv/bin/pip"
   TOX="venv/bin/tox"
-  PYTHON="venv/bin/$(PYTHON_VERSION)"
+  PYTHON="venv/bin/python"
   TWINE="venv/bin/twine"
 endif
 
@@ -84,7 +84,7 @@ docker/push/%:
 	docker push $(DOCKER_REPOSITORY)/$(IMAGE):$*
 
 docker/%: docker/build
-	docker run --rm -v $(PWD):$(PWD) -w $(PWD) $(DOCKER_REPOSITORY)/$(IMAGE) make $*
+	docker run --rm -v $(PWD):$(PWD) --tmpfs $(PWD)/.tox:exec -w $(PWD) $(DOCKER_REPOSITORY)/$(IMAGE) make $*
 
 docker/publish: docker/build
 	docker run --rm -v $(PWD):$(PWD) -w $(PWD) \
