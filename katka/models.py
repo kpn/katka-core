@@ -131,6 +131,7 @@ class SCMPipelineRun(AuditedModel):
     steps_completed = models.PositiveSmallIntegerField(default=0)
     pipeline_yaml = models.TextField(default="---")
     application = models.ForeignKey(Application, on_delete=models.PROTECT)
+    output = models.TextField(blank=True)
 
 
 class SCMStepRun(AuditedModel):
