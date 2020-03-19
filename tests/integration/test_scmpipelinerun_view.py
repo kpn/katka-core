@@ -211,6 +211,21 @@ do-release:
         assert new_plr.first_parent_hash is None
         assert new_plr.status == PIPELINE_STATUS_INITIALIZING
 
+    def test_create_with_output(self, client, logged_in_user, application, scm_pipeline_run):
+        initial_count = models.SCMPipelineRun.objects.count()
+        url = f"/scm-pipeline-runs/"
+        data = {
+            "output": "a output",
+            "commit_hash": "874AE57A143AEC5156FD1444A017A32137A3E34A",
+            "application": application.public_identifier,
+        }
+        response = client.post(url, data=data, content_type="application/json")
+        assert response.status_code == 201
+        assert models.SCMPipelineRun.objects.count() == initial_count + 1
+        new_plr = models.SCMPipelineRun.objects.filter(output="a output").first()
+        assert new_plr.first_parent_hash is None
+        assert new_plr.status == PIPELINE_STATUS_INITIALIZING
+
     def test_create_next_commit(self, client, logged_in_user, application, scm_pipeline_run):
         initial_count = models.SCMPipelineRun.objects.count()
         url = f"/scm-pipeline-runs/"

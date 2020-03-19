@@ -121,6 +121,7 @@ class SCMPipelineRunSerializer(KatkaSerializer):
             "pipeline_yaml",
             "application",
             "scmrelease_set",
+            "output",
         )
         read_only_fields = ("scmrelease_set",)
 
