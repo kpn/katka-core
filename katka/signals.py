@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from katka.constants import (
+    PIPELINE_STATUS_FAILED,
     PIPELINE_STATUS_IN_PROGRESS,
     PIPELINE_STATUS_INITIALIZING,
     PIPELINE_STATUS_QUEUED,
@@ -70,6 +71,13 @@ def create_close_releases(sender, **kwargs):
     pipeline = kwargs["instance"]
     if pipeline.status == PIPELINE_STATUS_SKIPPED:
         return
+
+    if pipeline.status == PIPELINE_STATUS_FAILED:
+        # it could be that the pipeline will never be in progress due to error in the
+        # initialization, which as a side effect will let the pipeline without any release.
+        # So, we check explicitly here to make sure we don't mess up with the workflow from
+        # `close_release_if_pipeline_finished`
+        create_release_if_necessary(pipeline)
 
     if pipeline.status == PIPELINE_STATUS_IN_PROGRESS:
         create_release_if_necessary(pipeline)
