@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.db import IntegrityError
@@ -254,7 +255,8 @@ class SCMStepRunUpdateStatusView(UpdateAuditMixin):
             },
         }
         session = settings.PIPELINE_RUNNER_SESSION
-        response = session.post(settings.PIPELINE_UPDATE_STEP_URL, json=data)
+        url = urljoin(settings.PIPELINE_RUNNER_BASE_URL, settings.PIPELINE_UPDATE_STEP_EP)
+        response = session.post(url, json=data)
 
         try:
             response.raise_for_status()

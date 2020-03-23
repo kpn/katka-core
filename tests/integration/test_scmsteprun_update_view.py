@@ -13,12 +13,17 @@ class TestUpdateStatusSCMStepRunView:
         data = {"status": "success"}
 
         session = mock.Mock()
-        overrides = {"PIPELINE_RUNNER_SESSION": session}
+        overrides = {
+            "PIPELINE_RUNNER_SESSION": session,
+            "PIPELINE_RUNNER_BASE_URL": "http://override-url/",
+            "PIPELINE_UPDATE_STEP_EP": "updatestep/",
+        }
         with override_settings(**overrides):
             response = client.patch(url, data, content_type="application/json")
 
         assert response.status_code == 200
         assert len(session.method_calls) == 1
+        assert session.method_calls[0][1][0] == "http://override-url/updatestep/"
         post = session.method_calls[0][2]["json"]
         assert post["user"] == "test_user"
         assert post["step"]["public_identifier"] == str(scm_step_run.public_identifier)

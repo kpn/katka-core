@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.db.models.signals import post_save
@@ -56,9 +57,8 @@ def send_pipeline_change_notification(sender, **kwargs):
         return
 
     session = settings.PIPELINE_RUNNER_SESSION
-    response = session.post(
-        settings.PIPELINE_CHANGE_NOTIFICATION_URL, json={"public_identifier": str(pipeline.public_identifier)}
-    )
+    url = urljoin(settings.PIPELINE_RUNNER_BASE_URL, settings.PIPELINE_CHANGE_NOTIFICATION_EP)
+    response = session.post(url, json={"public_identifier": str(pipeline.public_identifier)})
 
     try:
         response.raise_for_status()

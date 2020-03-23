@@ -32,7 +32,8 @@ class TestSCMPipelineRunSignals:
         session = mock.MagicMock()
         overrides = {
             "PIPELINE_RUNNER_SESSION": session,
-            "PIPELINE_CHANGE_NOTIFICATION_URL": "http://override-url/",
+            "PIPELINE_RUNNER_BASE_URL": "http://override-url/",
+            "PIPELINE_CHANGE_NOTIFICATION_EP": "change/",
         }
         with override_settings(**overrides):
             with username_on_model(SCMPipelineRun, "signal_tester"):
@@ -54,10 +55,12 @@ class TestSCMPipelineRunSignals:
             #   number of completed steps in the pipeline did not change
             assert session.post.call_args_list == [
                 mock.call(
-                    "http://override-url/", json={"public_identifier": str(my_scm_pipeline_run.public_identifier)}
+                    "http://override-url/change/",
+                    json={"public_identifier": str(my_scm_pipeline_run.public_identifier)},
                 ),
                 mock.call(
-                    "http://override-url/", json={"public_identifier": str(my_scm_pipeline_run.public_identifier)}
+                    "http://override-url/change/",
+                    json={"public_identifier": str(my_scm_pipeline_run.public_identifier)},
                 ),
             ]
 
@@ -65,7 +68,8 @@ class TestSCMPipelineRunSignals:
         session = mock.MagicMock()
         overrides = {
             "PIPELINE_RUNNER_SESSION": session,
-            "PIPELINE_CHANGE_NOTIFICATION_URL": "http://override-url/",
+            "PIPELINE_RUNNER_BASE_URL": "http://override-url/",
+            "PIPELINE_CHANGE_NOTIFICATION_EP": "change/",
         }
         with override_settings(**overrides):
             with username_on_model(SCMStepRun, "signal_tester"):
@@ -82,14 +86,15 @@ class TestSCMPipelineRunSignals:
         session = mock.MagicMock()
         overrides = {
             "PIPELINE_RUNNER_SESSION": session,
-            "PIPELINE_CHANGE_NOTIFICATION_URL": "http://override-url/",
+            "PIPELINE_RUNNER_BASE_URL": "http://override-url/",
+            "PIPELINE_CHANGE_NOTIFICATION_EP": "change/",
         }
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
             pipeline_run = SCMPipelineRun.objects.create(steps_total=0, application=application)
 
         # should not be called because the pipeline is still initializing
         assert session.post.call_args_list == [
-            mock.call("http://override-url/", json={"public_identifier": str(pipeline_run.public_identifier)}),
+            mock.call("http://override-url/change/", json={"public_identifier": str(pipeline_run.public_identifier)}),
         ]
 
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
@@ -113,14 +118,15 @@ class TestSCMPipelineRunSignals:
         session.post.return_value = mock_response
         overrides = {
             "PIPELINE_RUNNER_SESSION": session,
-            "PIPELINE_CHANGE_NOTIFICATION_URL": "http://override-url/",
+            "PIPELINE_RUNNER_BASE_URL": "http://override-url/",
+            "PIPELINE_CHANGE_NOTIFICATION_EP": "change/",
         }
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
             pipeline_run = SCMPipelineRun.objects.create(steps_total=0, application=application)
 
         # should not be called because the pipeline is still initializing
         assert session.post.call_args_list == [
-            mock.call("http://override-url/", json={"public_identifier": str(pipeline_run.public_identifier)}),
+            mock.call("http://override-url/change/", json={"public_identifier": str(pipeline_run.public_identifier)}),
         ]
 
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
