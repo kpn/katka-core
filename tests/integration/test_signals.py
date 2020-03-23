@@ -153,6 +153,25 @@ class TestReleaseSignal:
         assert SCMRelease.objects.count() == before + 1
         assert SCMRelease.objects.filter(scm_pipeline_runs__pk__exact=pipeline_run.pk).count() == 1
 
+    def test_release_created_when_pipeline_run_status_failed(self, application):
+        before = SCMRelease.objects.count()
+
+        session = mock.MagicMock()
+        overrides = {"PIPELINE_RUNNER_SESSION": session}
+        with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
+            pipeline_run = SCMPipelineRun.objects.create(application=application)
+
+        # nothing changed
+        assert SCMRelease.objects.count() == before
+
+        with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
+            pipeline_run.status = constants.PIPELINE_STATUS_FAILED
+            pipeline_run.save()
+
+        # new release created
+        assert SCMRelease.objects.count() == before + 1
+        assert SCMRelease.objects.filter(scm_pipeline_runs__pk__exact=pipeline_run.pk).count() == 1
+
     def test_release_not_created_when_updating(self, my_scm_pipeline_run):
         session = mock.MagicMock()
         overrides = {"PIPELINE_RUNNER_SESSION": session}
@@ -179,6 +198,27 @@ class TestReleaseSignal:
         with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
             pipeline_run = SCMPipelineRun.objects.create(application=application)
             pipeline_run.status = constants.PIPELINE_STATUS_IN_PROGRESS
+            pipeline_run.save()
+
+        assert release.scm_pipeline_runs.count() == before + 1
+        assert release.scm_pipeline_runs.filter(pk__exact=my_scm_pipeline_run.pk).count() == 1
+        assert release.scm_pipeline_runs.filter(pk__exact=pipeline_run.pk).count() == 1
+
+    def test_pipeline_gets_added_to_open_release_when_status_failed(
+        self, my_scm_pipeline_run, my_scm_release, application
+    ):
+        """When a release is still open, NO new release should be created when a new pipeline is created"""
+        releases = SCMRelease.objects.filter(scm_pipeline_runs=my_scm_pipeline_run)
+        assert len(releases) == 1
+        release = releases[0]
+        assert release.status == "in progress"
+        before = release.scm_pipeline_runs.count()
+
+        session = mock.MagicMock()
+        overrides = {"PIPELINE_RUNNER_SESSION": session}
+        with override_settings(**overrides), username_on_model(SCMPipelineRun, "signal_tester"):
+            pipeline_run = SCMPipelineRun.objects.create(application=application)
+            pipeline_run.status = constants.PIPELINE_STATUS_FAILED
             pipeline_run.save()
 
         assert release.scm_pipeline_runs.count() == before + 1
