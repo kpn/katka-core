@@ -137,12 +137,15 @@ format/black:
 
 
 # ********** Packaging and distributing **********
-setup.py:
+.PHONY: up_to_date_pip
+up_to_date_pip:
+	$(PIP) install -U pip
+
+setup.py: up_to_date_pip
 	$(PYTHON) setup_gen.py
 	@echo 'setup.py created'
 
 publish: setup.py
-	$(PIP) install -U pip
 	$(PYTHON) setup.py sdist bdist_wheel
 	$(TWINE) check dist/*
 	$(TWINE) upload dist/*
