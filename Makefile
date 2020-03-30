@@ -142,6 +142,7 @@ setup.py:
 	@echo 'setup.py created'
 
 publish: setup.py
+	$(PIP) install -U pip
 	$(PYTHON) setup.py sdist bdist_wheel
 	$(TWINE) check dist/*
 	$(TWINE) upload dist/*
