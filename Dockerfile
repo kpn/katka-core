@@ -8,7 +8,10 @@ WORKDIR $PROJECT_ROOT
 
 COPY Makefile .
 COPY requirements.txt .
-COPY requirements requirements
+COPY setup.py .
+COPY README.md .
+# purely so we can get the version from git
+COPY .git .git
 RUN make install_requirement_txt
 
 CMD ["make", "test"]

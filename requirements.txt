@@ -1,3 +1,24 @@
-# Additional packages
--r requirements/requirements-base.txt
--r requirements/requirements-testing.txt
+# Package in develop mode
+-e .
+
+# Code style
+isort
+flake8
+black
+
+# Tests
+tox
+codecov
+freezegun
+pytest
+pytest-cov
+pytest-django
+pluggy
+
+# Packaging
+setuptools
+setuptools_scm
+twine
+wheel
+
+readme_renderer[md]

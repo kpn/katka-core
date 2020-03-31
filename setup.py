@@ -1,19 +1,22 @@
 #!/usr/bin/env python
-import os
+from setuptools import find_packages, setup
 
-from pkgversion import list_requirements, pep440_version, write_setup_py
-from setuptools import find_packages
-
-write_setup_py(
+setup(
     name='katka-core',
-    version=os.getenv('tag') or pep440_version(),
+    use_scm_version=True,
+    setup_requires=["setuptools_scm"],
     description='Katka Django core application',
     long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
     author='D-Nitro',
     author_email='d-nitro@kpn.com',
     url='https://github.com/kpn/katka-core',
-    install_requires=list_requirements('requirements/requirements-base.txt'),
+    install_requires=[
+        'Django>=2.2.9,<3.0',
+        'djangorestframework>=3.9.0,<4.0.0',
+        'django-encrypted-model-fields>=0.5.8,<1.0.0',
+        'drf-nested-routers',
+    ],
     packages=find_packages(),
     tests_require=['tox'],
     include_package_data=True,
@@ -25,6 +28,7 @@ write_setup_py(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Internet :: WWW/HTTP',
     ]
 )
