@@ -181,7 +181,6 @@ build.properties.json
 REVISION
 db.sqlite*
 katka-api-*.tgz
-setup.py
 venv
 src/main/params.py
 

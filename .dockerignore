@@ -1,9 +1,8 @@
 .dist
-.git
 .idea
 .pytest_cache
 .tox
 htmlcov
 venv
-setup.py
+db.sqlite3
 **/__pycache__

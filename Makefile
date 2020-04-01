@@ -6,8 +6,6 @@
 IMAGE=katka-core
 DOCKER_REPOSITORY=kpnnv
 
-REQUIREMENTS_BASE:=requirements/requirements-base.txt
-REQUIREMENTS_TEST:=requirements/requirements-testing.txt
 REQUIREMENTS_TXT:=requirements.txt
 
 PYTHON_VERSION=python3.8
@@ -104,7 +102,7 @@ tox:
 test: docker/test_local
 
 .PHONY: test_local
-test_local: install_requirement_txt check_forgotten_migrations install_requirement_unittests lint tox
+test_local: install_requirement_txt check_forgotten_migrations lint tox
 	@echo 'tests done'
 
 # ********** Code style **********
@@ -137,12 +135,7 @@ format/black:
 
 
 # ********** Packaging and distributing **********
-setup.py:
-	$(PYTHON) setup_gen.py
-	@echo 'setup.py created'
-
-publish: setup.py
-	$(PIP) install -U pip
+publish:
 	$(PYTHON) setup.py sdist bdist_wheel
 	$(TWINE) check dist/*
 	$(TWINE) upload dist/*
@@ -152,10 +145,6 @@ publish: setup.py
 .PHONY: install_requirement_txt
 install_requirement_txt:
 	@$(PIP) install -r $(REQUIREMENTS_TXT)
-
-.PHONY: install_requirement_unittests
-install_requirement_unittests:
-	$(PIP) install -r $(REQUIREMENTS_TEST)
 
 
 # ********** Virtual environment **********
