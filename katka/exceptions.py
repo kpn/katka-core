@@ -34,3 +34,9 @@ class PipelineRunnerError(APIException):
         "code": "pipeline_runner_error",
     }
     default_code = "pipeline_runner_error"
+
+
+class OutputNotValidError(APIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = _("The step output is not a valid JSON.")
+    default_code = "invalid_output"

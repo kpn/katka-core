@@ -20,6 +20,9 @@ router.register("queued-scm-pipeline-runs", views.QueuedSCMPipelineRunViewSet, b
 router.register("scm-step-runs", views.SCMStepRunViewSet, basename="scm-step-runs")
 router.register("scm-releases", views.SCMReleaseViewSet, basename="scm-releases")
 router.register("update-scm-step-run", views.SCMStepRunUpdateStatusView, basename="update-scm-step-run")
+router.register(
+    "append-build-info-scm-step-run", views.SCMStepRunAppendBuildInfoView, basename="append-build-info-scm-step-run"
+)
 
 secrets_router = NestedSimpleRouter(router, "credentials", lookup="credentials")
 secrets_router.register("secrets", views.CredentialSecretsViewSet, basename="secrets")

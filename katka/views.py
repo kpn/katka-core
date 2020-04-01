@@ -1,3 +1,4 @@
+import json
 import logging
 from urllib.parse import urljoin
 
@@ -11,7 +12,7 @@ from katka.constants import (
     PIPELINE_STATUS_QUEUED,
     PIPELINE_STATUS_SKIPPED,
 )
-from katka.exceptions import AlreadyExists, ParentCommitMissing, PipelineRunnerError
+from katka.exceptions import AlreadyExists, OutputNotValidError, ParentCommitMissing, PipelineRunnerError
 from katka.models import (
     Application,
     ApplicationMetadata,
@@ -35,6 +36,7 @@ from katka.serializers import (
     SCMReleaseSerializer,
     SCMRepositorySerializer,
     SCMServiceSerializer,
+    SCMStepRunAppendBuildInfoSerializer,
     SCMStepRunSerializer,
     SCMStepRunUpdateSerializer,
     TeamSerializer,
@@ -254,6 +256,57 @@ class SCMStepRunUpdateStatusView(UpdateAuditMixin):
                 "status": serializer.validated_data["status"],
             },
         }
+        session = settings.PIPELINE_RUNNER_SESSION
+        url = urljoin(settings.PIPELINE_RUNNER_BASE_URL, settings.PIPELINE_UPDATE_STEP_EP)
+        response = session.post(url, json=data)
+
+        try:
+            response.raise_for_status()
+        except HTTPError:
+            log.exception("Failed to update the step via the pipeline runner")
+            raise PipelineRunnerError
+
+    def get_user_restricted_queryset(self, queryset):
+        user_groups = self.request.user.groups.all()
+        return queryset.filter(scm_pipeline_run__application__project__team__group__in=user_groups)
+
+
+class SCMStepRunAppendBuildInfoView(UpdateAuditMixin):
+    model = SCMStepRun
+    serializer_class = SCMStepRunAppendBuildInfoSerializer
+
+    def perform_update(self, serializer):
+        # instead of saving the serializer, we call a remote endpoint
+        self.call_endpoint(serializer)
+
+    def _build_data_params(self, serializer):
+        data = {
+            "user": self.request.user.username,
+            "step": {
+                "public_identifier": str(serializer.instance.public_identifier),
+                "status": serializer.validated_data["status"],
+            },
+        }
+        current_output = None
+        if serializer.instance.output:
+            try:
+                current_output = json.loads(serializer.instance.output)
+            except json.decoder.JSONDecodeError as e:
+                raise OutputNotValidError(e)
+        # "null" string is a valid json. In case we have null, replace with empty dict
+        current_output = current_output if current_output else {}
+        new_values_for_fields = {
+            "build_number": serializer.validated_data["build_number"],
+            "build_result": serializer.validated_data["build_result"],
+            "comment": serializer.validated_data["comment"],
+        }
+        current_output.update(new_values_for_fields)
+        data["step"]["output"] = json.dumps(current_output)
+        return data
+
+    def call_endpoint(self, serializer):
+
+        data = self._build_data_params(serializer)
         session = settings.PIPELINE_RUNNER_SESSION
         url = urljoin(settings.PIPELINE_RUNNER_BASE_URL, settings.PIPELINE_UPDATE_STEP_EP)
         response = session.post(url, json=data)
