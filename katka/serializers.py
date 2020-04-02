@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group
 
 from katka.auth import has_full_access_scope
-from katka.constants import STEP_STATUS_CHOICES
+from katka.constants import BUILD_RESULT_CHOICES, STEP_STATUS_CHOICES
 from katka.models import (
     Application,
     ApplicationMetadata,
@@ -155,6 +155,21 @@ class SCMStepRunUpdateSerializer(KatkaSerializer):
     class Meta:
         model = SCMStepRun
         fields = ("public_identifier", "status", "ended_at")
+
+    def __init__(self, *args, **kwargs):
+        kwargs["partial"] = False  # otherwise DRF will allow empty status
+        super().__init__(*args, **kwargs)
+
+
+class SCMStepRunAppendBuildInfoSerializer(KatkaSerializer):
+    status = serializers.ChoiceField(required=True, choices=STEP_STATUS_CHOICES)
+    build_result = serializers.ChoiceField(required=True, choices=BUILD_RESULT_CHOICES, write_only=True)
+    build_number = serializers.IntegerField(required=True, write_only=True)
+    comment = serializers.CharField(max_length=500, write_only=True)
+
+    class Meta:
+        model = SCMStepRun
+        fields = ("public_identifier", "status", "ended_at", "build_result", "build_number", "comment")
 
     def __init__(self, *args, **kwargs):
         kwargs["partial"] = False  # otherwise DRF will allow empty status

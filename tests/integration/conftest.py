@@ -1,4 +1,5 @@
 import contextlib
+import json
 
 from django.contrib.auth.models import Group, User
 from django.test import Client, modify_settings, override_settings
@@ -596,6 +597,46 @@ def my_scm_step_run(my_scm_pipeline_run):
         sequence_id="1.1-1",
         started_at="2018-11-11 08:25:30+0000",
         ended_at="2018-11-11 09:01:40+0000",
+    )
+
+    with username_on_model(models.SCMStepRun, "initial"):
+        scm_step_run.save()
+
+    return scm_step_run
+
+
+@pytest.fixture
+def my_scm_step_run_with_output(my_scm_pipeline_run):
+    scm_step_run = models.SCMStepRun(
+        slug="release",
+        name="Release Katka",
+        stage="Production",
+        step_type="type",
+        scm_pipeline_run=my_scm_pipeline_run,
+        sequence_id="1.1-1",
+        started_at="2018-11-11 08:25:30+0000",
+        ended_at="2018-11-11 09:01:40+0000",
+        output=json.dumps({"build_result": "failed", "build_number": 1, "comment": "comment 1", "field": "test"}),
+    )
+
+    with username_on_model(models.SCMStepRun, "initial"):
+        scm_step_run.save()
+
+    return scm_step_run
+
+
+@pytest.fixture
+def my_scm_step_run_with_broken_output(my_scm_pipeline_run):
+    scm_step_run = models.SCMStepRun(
+        slug="release",
+        name="Release Katka",
+        stage="Production",
+        step_type="type",
+        scm_pipeline_run=my_scm_pipeline_run,
+        sequence_id="1.1-1",
+        started_at="2018-11-11 08:25:30+0000",
+        ended_at="2018-11-11 09:01:40+0000",
+        output="{{",
     )
 
     with username_on_model(models.SCMStepRun, "initial"):
