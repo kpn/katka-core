@@ -41,6 +41,7 @@ from katka.serializers import (
     SCMStepRunUpdateSerializer,
     TeamSerializer,
 )
+from katka.utils import get_teams
 from katka.viewsets import AuditViewSet, FilterViewMixin, ReadOnlyAuditMixin, UpdateAuditMixin
 from requests import HTTPError
 
@@ -55,9 +56,7 @@ class TeamViewSet(FilterViewMixin, AuditViewSet):
     parameter_lookup_map = {"application": "project__application"}
 
     def get_user_restricted_queryset(self, queryset):
-        # Only show teams that are linked to a group that the user is part of
-        user_groups = self.request.user.groups.all()
-        return queryset.filter(group__in=user_groups)
+        return get_teams(self.request.user)
 
 
 class ProjectViewSet(FilterViewMixin, AuditViewSet):
@@ -65,8 +64,8 @@ class ProjectViewSet(FilterViewMixin, AuditViewSet):
     serializer_class = ProjectSerializer
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
-        return queryset.filter(team__group__in=user_groups)
+        user_teams = get_teams(self.request.user)
+        return queryset.filter(team__in=user_teams)
 
 
 class ApplicationViewSet(FilterViewMixin, AuditViewSet):
@@ -74,8 +73,8 @@ class ApplicationViewSet(FilterViewMixin, AuditViewSet):
     serializer_class = ApplicationSerializer
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
-        return queryset.filter(project__team__group__in=user_groups)
+        user_teams = get_teams(self.request.user)
+        return queryset.filter(project__team__in=user_teams)
 
 
 class CredentialViewSet(FilterViewMixin, AuditViewSet):
@@ -83,8 +82,8 @@ class CredentialViewSet(FilterViewMixin, AuditViewSet):
     serializer_class = CredentialSerializer
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
-        return queryset.filter(team__group__in=user_groups)
+        user_teams = get_teams(self.request.user)
+        return queryset.filter(team__in=user_teams)
 
 
 class CredentialSecretsViewSet(AuditViewSet):
@@ -101,8 +100,8 @@ class CredentialSecretsViewSet(AuditViewSet):
         return super().get_queryset().filter(**kwargs)
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
-        return queryset.filter(credential__team__group__in=user_groups)
+        user_teams = get_teams(self.request.user)
+        return queryset.filter(credential__team__in=user_teams)
 
 
 class SCMServiceViewSet(ReadOnlyAuditMixin):
@@ -118,8 +117,8 @@ class SCMRepositoryViewSet(FilterViewMixin, AuditViewSet):
     serializer_class = SCMRepositorySerializer
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
-        return queryset.filter(credential__team__group__in=user_groups)
+        user_teams = get_teams(self.request.user)
+        return queryset.filter(credential__team__in=user_teams)
 
 
 class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
@@ -216,8 +215,8 @@ class SCMPipelineRunViewSet(FilterViewMixin, AuditViewSet):
         next_pipeline.save()
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
-        return queryset.filter(application__project__team__group__in=user_groups)
+        user_teams = get_teams(self.request.user)
+        return queryset.filter(application__project__team__in=user_teams)
 
 
 class QueuedSCMPipelineRunViewSet(FilterViewMixin, ReadOnlyAuditMixin):
@@ -225,9 +224,9 @@ class QueuedSCMPipelineRunViewSet(FilterViewMixin, ReadOnlyAuditMixin):
     serializer_class = SCMPipelineRunSerializer
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
+        user_teams = get_teams(self.request.user)
         return queryset.filter(
-            application__project__team__group__in=user_groups, status=PIPELINE_STATUS_QUEUED, scmrelease__isnull=True
+            application__project__team__in=user_teams, status=PIPELINE_STATUS_QUEUED, scmrelease__isnull=True
         )
 
 
@@ -236,8 +235,8 @@ class SCMStepRunViewSet(FilterViewMixin, AuditViewSet):
     serializer_class = SCMStepRunSerializer
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
-        return queryset.filter(scm_pipeline_run__application__project__team__group__in=user_groups)
+        user_teams = get_teams(self.request.user)
+        return queryset.filter(scm_pipeline_run__application__project__team__in=user_teams)
 
 
 class SCMStepRunUpdateStatusView(UpdateAuditMixin):
@@ -318,8 +317,8 @@ class SCMStepRunAppendBuildInfoView(UpdateAuditMixin):
             raise PipelineRunnerError
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
-        return queryset.filter(scm_pipeline_run__application__project__team__group__in=user_groups)
+        user_teams = get_teams(self.request.user)
+        return queryset.filter(scm_pipeline_run__application__project__team__in=user_teams)
 
 
 class SCMReleaseViewSet(FilterViewMixin, ReadOnlyAuditMixin):
@@ -329,9 +328,9 @@ class SCMReleaseViewSet(FilterViewMixin, ReadOnlyAuditMixin):
     parameter_lookup_map = {"application": "scm_pipeline_runs__application", "pipeline_run": "scm_pipeline_runs"}
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
+        user_teams = get_teams(self.request.user)
         # Do select distinct because of the many to many relationship
-        return queryset.distinct().filter(scm_pipeline_runs__application__project__team__group__in=user_groups)
+        return queryset.distinct().filter(scm_pipeline_runs__application__project__team__in=user_teams)
 
 
 class ApplicationMetadataViewSet(AuditViewSet):
@@ -350,5 +349,5 @@ class ApplicationMetadataViewSet(AuditViewSet):
         return super().get_queryset().filter(**kwargs)
 
     def get_user_restricted_queryset(self, queryset):
-        user_groups = self.request.user.groups.all()
-        return queryset.filter(application__project__team__group__in=user_groups)
+        user_teams = get_teams(self.request.user)
+        return queryset.filter(application__project__team__in=user_teams)

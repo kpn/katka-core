@@ -1,6 +1,6 @@
 import uuid
 
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.db import models
 
 from encrypted_model_fields.fields import EncryptedCharField
@@ -21,6 +21,7 @@ class Team(AuditedModel):
     slug = KatkaSlugField(unique=True)
     name = models.CharField(max_length=100)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    sys_users = models.ManyToManyField(User, related_name="sys_teams")
 
     def __str__(self):  # pragma: no cover
         return f"{self.group.name}"

@@ -11,9 +11,11 @@ class TestCredentialViewSet:
         assert response.status_code == 200
         parsed = response.json()
         assert len(parsed) == 3
-        assert UUID(parsed[0]["public_identifier"]) == credential.public_identifier
-        assert parsed[0]["name"] == "System user X"
-        parsed_team = parsed[0]["team"]
+        credential_teamx = [c for c in parsed if c["name"] == "System user X"]
+        assert len(credential_teamx) == 1
+        credential_teamx = credential_teamx[0]
+        assert UUID(credential_teamx["public_identifier"]) == credential.public_identifier
+        parsed_team = credential_teamx["team"]
         assert UUID(parsed_team) == team.public_identifier
 
     def test_filtered_list(self, client, logged_in_user, team, credential, my_other_team, my_other_teams_credential):
