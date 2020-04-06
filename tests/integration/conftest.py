@@ -22,6 +22,14 @@ def user_client():
     yield client
 
 
+@contextlib.contextmanager
+def sys_user_client():
+    client = Client()
+    user = User.objects.get(username="sys_test_user")
+    client.force_login(user)
+    yield client
+
+
 class AddScopesMiddleware:
     def __init__(self, handler):
         self.handler = handler
@@ -264,6 +272,14 @@ def user(group, my_other_group):
     u = User.objects.create_user("test_user", None, None)
     u.groups.add(group)
     u.groups.add(my_other_group)
+    return u
+
+
+@pytest.fixture
+def sys_user(my_team, my_other_team):
+    u = User.objects.create_user("sys_test_user", None, None)
+    my_team.sys_users.add(u)
+    my_other_team.sys_users.add(u)
     return u
 
 
@@ -826,6 +842,7 @@ def most_models(
     scm_step_run,
     team,
     user,
+    sys_user,
     not_my_application,
     not_my_credential,
     not_my_metadata,
@@ -850,6 +867,7 @@ def most_models(
         "step_run": scm_step_run,
         "team": team,
         "user": user,
+        "sys_user": sys_user,
         "not_my_application": not_my_application,
         "not_my_credential": not_my_credential,
         "not_my_metadata": not_my_metadata,
